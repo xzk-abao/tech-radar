@@ -334,11 +334,19 @@
     });
   }
 
+  function setTab(tab, updateHash = true) {
+    const allowed = ["all", "official", "github", "learning", "knowledge", "health"];
+    state.tab = allowed.includes(tab) ? tab : "all";
+    if (updateHash) {
+      history.replaceState(null, "", state.tab === "all" ? location.pathname : `#${state.tab}`);
+    }
+    render();
+  }
+
   function bindEvents() {
     $$("#tabs button").forEach((button) => {
       button.addEventListener("click", () => {
-        state.tab = button.dataset.tab;
-        render();
+        setTab(button.dataset.tab);
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
@@ -388,6 +396,12 @@
 
   async function init() {
     bindEvents();
+    const params = new URLSearchParams(location.search);
+    const initialTab = params.get("tab") || location.hash.replace("#", "");
+    if (initialTab) state.tab = initialTab;
+    window.addEventListener("hashchange", () => {
+      setTab(location.hash.replace("#", ""), false);
+    });
     try {
       const response = await fetch("data/items.json", { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
