@@ -1,0 +1,493 @@
+[
+  {
+    "id": "demo-claude-code",
+    "source_id": "claude_code_releases",
+    "source_name": "Claude Code Releases",
+    "tier": "official",
+    "title": "anthropics/claude-code v2.1.316",
+    "url": "https://github.com/anthropics/claude-code/releases",
+    "published_at": "2026-10-31T00:00:00+00:00",
+    "summary_raw": "Claude Code 发布 v2.1.316，包含一组行为修复与新增能力。",
+    "tags": [
+      "claude-code",
+      "agent",
+      "release"
+    ],
+    "extra": {
+      "why": "你每天使用的编码工具更新，建议看 release notes 里的行为变化。",
+      "source_weight": 5,
+      "knowledge": null
+    }
+  },
+  {
+    "id": "demo-mcp",
+    "source_id": "mcp_releases",
+    "source_name": "MCP Releases",
+    "tier": "official",
+    "title": "MCP specification 2026-07-28",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+    "published_at": "2026-07-28T00:00:00+00:00",
+    "summary_raw": "Model Context Protocol 规范 2026-07-28 版本。",
+    "tags": [
+      "mcp",
+      "protocol",
+      "release"
+    ],
+    "extra": {
+      "why": "MCP 是工具生态的接口层，规范变化会影响你接的 MCP server。",
+      "source_weight": 5,
+      "knowledge": {
+        "concept": "MCP",
+        "one_liner": "模型与外部工具/数据之间的开放协议。",
+        "why_it_matters": "工具生态解耦，换模型不必重写工具。",
+        "learning_path": [
+          "读 MCP 规范",
+          "接一个 MCP server",
+          "写一个自定义 tool"
+        ],
+        "difficulty": 3
+      }
+    }
+  },
+  {
+    "id": "demo-langchain4j",
+    "source_id": "langchain4j_releases",
+    "source_name": "LangChain4j Releases",
+    "tier": "official",
+    "title": "langchain4j/langchain4j 1.23.0",
+    "url": "https://github.com/langchain4j/langchain4j/releases",
+    "published_at": "2026-10-28T00:00:00+00:00",
+    "summary_raw": "LangChain4j 1.23.0 发布。",
+    "tags": [
+      "java",
+      "langchain4j",
+      "release"
+    ],
+    "extra": {
+      "why": "你的 Java AI 技术栈核心库更新，重点看 API 变更与依赖升级。",
+      "source_weight": 5,
+      "knowledge": {
+        "concept": "Tool Calling",
+        "one_liner": "让模型按 schema 调用 Java 方法，并把结果送回模型。",
+        "why_it_matters": "它是单 Agent 循环里模型与业务系统交互的核心机制。",
+        "learning_path": [
+          "读 LangChain4j tools 文档",
+          "把现有 service 包成 tool",
+          "加权限与参数校验"
+        ],
+        "difficulty": 3
+      }
+    }
+  },
+  {
+    "id": "d89020cd508b60ae",
+    "source_id": "openai_news",
+    "source_name": "OpenAI News",
+    "tier": "official",
+    "title": "Making it easier for websites to express AI training preferences",
+    "url": "https://openai.com/index/helping-websites-express-ai-training-preferences",
+    "published_at": "2026-10-30T09:30:00+00:00",
+    "summary_raw": "OpenAI will honor a shared robots.txt signal to help website operators communicate their AI training preferences to participating providers.",
+    "tags": [
+      "Company",
+      "openai",
+      "model"
+    ],
+    "extra": {
+      "author": "",
+      "source_weight": 5,
+      "why": "官方发布/变更，直接影响你正在使用的工具或平台。"
+    },
+    "fetched_at": "2026-10-31T07:34:42+00:00",
+    "score": 71.1,
+    "cluster_id": "c4e3f39150f6ebc3",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "OpenAI News",
+        "title": "Making it easier for websites to express AI training preferences",
+        "url": "https://openai.com/index/helping-websites-express-ai-training-preferences",
+        "published_at": "2026-10-30T09:30:00+00:00"
+      }
+    ],
+    "summary": "OpenAI will honor a shared robots.txt signal to help website operators communicate their AI training preferences to participating providers.",
+    "why": "官方发布/变更，直接影响你正在使用的工具或平台。",
+    "knowledge": null
+  },
+  {
+    "id": "fab0640dde5ddf0f",
+    "source_id": "github_changelog",
+    "source_name": "GitHub Changelog",
+    "tier": "official",
+    "title": "GitHub Copilot app, Universe releases",
+    "url": "https://github.blog/changelog/2026-10-28-github-copilot-app-universe-releases",
+    "published_at": "2026-10-28T15:55:00+00:00",
+    "summary_raw": "Work doesn’t always fit in a single repository or session. A feature can span several repositories. A launch plan can pull in specs, designs, and assets without touching a repository… The post GitHub Copilot app, Universe releases appeared first on The GitHub Blog .",
+    "tags": [
+      "Release",
+      "copilot",
+      "universe26",
+      "github",
+      "platform"
+    ],
+    "extra": {
+      "author": "Allison",
+      "source_weight": 5,
+      "why": "官方发布/变更，直接影响你正在使用的工具或平台。"
+    },
+    "fetched_at": "2026-10-31T07:34:42+00:00",
+    "score": 65.6,
+    "cluster_id": "950f64cc8da623a0",
+    "cluster_size": 3,
+    "members": [
+      {
+        "source_name": "GitHub Changelog",
+        "title": "GitHub Copilot app, Universe releases",
+        "url": "https://github.blog/changelog/2026-10-28-github-copilot-app-universe-releases",
+        "published_at": "2026-10-28T15:55:00+00:00"
+      },
+      {
+        "source_name": "GitHub Changelog",
+        "title": "Security extension for the GitHub Copilot app",
+        "url": "https://github.blog/changelog/2026-10-28-security-extension-for-the-github-copilot-app",
+        "published_at": "2026-10-28T15:45:00+00:00"
+      },
+      {
+        "source_name": "GitHub Changelog",
+        "title": "GitHub Copilot in VS Code, Universe releases",
+        "url": "https://github.blog/changelog/2026-10-28-github-copilot-in-vs-code-universe-releases",
+        "published_at": "2026-10-28T15:33:00+00:00"
+      }
+    ],
+    "summary": "Work doesn’t always fit in a single repository or session. A feature can span several repositories. A launch plan can pull in specs, designs, and assets withou…",
+    "why": "官方发布/变更，直接影响你正在使用的工具或平台。",
+    "knowledge": null
+  },
+  {
+    "id": "231e43d1d15e8fb0",
+    "source_id": "github_new_repos",
+    "source_name": "GitHub New Repos",
+    "tier": "github",
+    "title": "boardshogunfluctuate/Capri-AI",
+    "url": "https://github.com/boardshogunfluctuate/Capri-AI",
+    "published_at": "2026-10-30T22:03:48+00:00",
+    "summary_raw": "⚡ Tell your PC what to do. Capri is a cyberpunk AI agent that works with your files, projects and code through Claude Code, Codex or Antigravity. Windows installer, no terminal. Fan-made, not affiliated with CD PROJEKT RED.",
+    "tags": [
+      "ai",
+      "ai-agent",
+      "ai-agents",
+      "ai-assistants",
+      "antigravity",
+      "claude-code",
+      "claude-code-mod",
+      "codex",
+      "github",
+      "new",
+      "trending"
+    ],
+    "extra": {
+      "full_name": "boardshogunfluctuate/Capri-AI",
+      "stars": 286,
+      "forks": 55,
+      "language": null,
+      "topics": [
+        "ai",
+        "ai-agent",
+        "ai-agents",
+        "ai-assistants",
+        "antigravity",
+        "claude-code",
+        "claude-code-mod",
+        "codex",
+        "codex-app",
+        "cyberpunks",
+        "desktop-app",
+        "desktop-application",
+        "edgerunners",
+        "edgerunners-2",
+        "jarvis",
+        "jarvis-ai",
+        "windows",
+        "windows-10",
+        "windows-11"
+      ],
+      "query": "created:>2026-10-24 topic:ai-agents sort:stars",
+      "source_weight": 5,
+      "why": "GitHub 趋势项目，值得看它的实现思路或生态影响。"
+    },
+    "fetched_at": "2026-10-31T07:34:44+00:00",
+    "score": 78.4,
+    "cluster_id": "5ae1de66e3c4d3cd",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "GitHub New Repos",
+        "title": "boardshogunfluctuate/Capri-AI",
+        "url": "https://github.com/boardshogunfluctuate/Capri-AI",
+        "published_at": "2026-10-30T22:03:48+00:00"
+      }
+    ],
+    "summary": "⚡ Tell your PC what to do. Capri is a cyberpunk AI agent that works with your files, projects and code through Claude Code, Codex or Antigravity. Windows insta…",
+    "why": "GitHub 热度项目（约 286 stars），值得看它的实现思路或生态影响。",
+    "knowledge": null
+  },
+  {
+    "id": "ee43540c748da69b",
+    "source_id": "github_watchlist",
+    "source_name": "GitHub Watchlist Releases",
+    "tier": "github",
+    "title": "anthropics/claude-code v2.1.316",
+    "url": "https://github.com/anthropics/claude-code/releases/tag/v2.1.316",
+    "published_at": "2026-10-31T01:01:35+00:00",
+    "summary_raw": "## What's changed - Added `CLAUDE_CODE_DISABLE_ULTRATHINK`, which turns the `ultrathink` keyword off - Added pooled group budgets to the Claude apps gateway: one monthly budget that a group's members share, on top of each member's own limit, set with `pooled_budget` on the spend limits admin API - Added `CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP` to keep system cross-certificates that certify each other in a loop, for servers whose private CA needs one - Added `CLAUDE_CODE_SUBAGENT_EFFORT` to set the effort level subagents run at when nothing else names one, instead of inheriting the session's - Added `managed.policy_mode: layered` to the Claude apps gateway: every policy that matches a de…",
+    "tags": [
+      "release",
+      "claude-code",
+      "github",
+      "watchlist"
+    ],
+    "extra": {
+      "repo": "anthropics/claude-code",
+      "tag": "v2.1.316",
+      "prerelease": false,
+      "source_weight": 5,
+      "why": "GitHub 趋势项目，值得看它的实现思路或生态影响。",
+      "knowledge": {
+        "concept": "渐进式披露",
+        "one_liner": "工具和技能只在需要时加载完整定义，避免上下文膨胀。",
+        "why_it_matters": "工具超过 30-50 个后，模型选工具的准确率会下降。",
+        "learning_path": [
+          "读 Claude Code Skills 文档",
+          "写一个最小 SKILL.md",
+          "用 /skill-doctor 审计使用频率"
+        ],
+        "difficulty": 2
+      }
+    },
+    "fetched_at": "2026-10-31T07:34:44+00:00",
+    "score": 77.9,
+    "cluster_id": "86605373b1ab71d1",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "GitHub Watchlist Releases",
+        "title": "anthropics/claude-code v2.1.316",
+        "url": "https://github.com/anthropics/claude-code/releases/tag/v2.1.316",
+        "published_at": "2026-10-31T01:01:35+00:00"
+      }
+    ],
+    "summary": "## What's changed - Added `CLAUDE_CODE_DISABLE_ULTRATHINK`, which turns the `ultrathink` keyword off - Added pooled group budgets to the Claude apps gateway: o…",
+    "why": "GitHub 趋势项目，值得关注其用途和维护状态。",
+    "knowledge": null
+  },
+  {
+    "id": "afa7aaf897a062f0",
+    "source_id": "simon_willison",
+    "source_name": "Simon Willison",
+    "tier": "learning",
+    "title": "dbreunig/nesformer",
+    "url": "https://simonwillison.net/2026/Oct/30/nesformer/",
+    "published_at": "2026-10-30T21:59:22+00:00",
+    "summary_raw": "dbreunig/nesformer Inspired by qwenputer by Divyansh Agrawal, Drew Breunig baked a working emulator for a Nintendo Entertainment System 6502 CPU into the weights of Qwen3.5-4B. You can now play NES ROMs such as Super Mario Bros (very slowly) running inside Qwen! In a comment on Hacker News Drew reveals the Opus 5.5 prompts he used to build this system: Read this article and any relevant source code: https://divagr.com/blog/qwenputer. Then explore if you could emulate the chip and ram in a Nintendo Entertainment System (as people do today with FPGAs in MISTRs) using this technique. If so, what size model would you have to build and if you could use smaller faster ones, could you get it to be at the standard clockspeed. Followed by: I think we should build it! Just for fun. It's okay if it'…",
+    "tags": [
+      "games",
+      "ai",
+      "generative-ai",
+      "llms",
+      "drew-breunig",
+      "qwen",
+      "conformance-suites",
+      "llm",
+      "hands-on"
+    ],
+    "extra": {
+      "author": "",
+      "source_weight": 5,
+      "why": "高质量学习材料，适合补充知识体系或用作实践参考。"
+    },
+    "fetched_at": "2026-10-31T07:34:43+00:00",
+    "score": 76.4,
+    "cluster_id": "7f53852028726b82",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "Simon Willison",
+        "title": "dbreunig/nesformer",
+        "url": "https://simonwillison.net/2026/Oct/30/nesformer/",
+        "published_at": "2026-10-30T21:59:22+00:00"
+      }
+    ],
+    "summary": "dbreunig/nesformer Inspired by qwenputer by Divyansh Agrawal, Drew Breunig baked a working emulator for a Nintendo Entertainment System 6502 CPU into the weigh…",
+    "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+    "knowledge": null
+  },
+  {
+    "id": "ff8fa72b1d7785f2",
+    "source_id": "meituan_tech",
+    "source_name": "美团技术团队",
+    "tier": "learning",
+    "title": "从 LOOP 到图探索 —— 算法模型的 AutoResearch 自进化系统架构演进之路",
+    "url": "https://tech.meituan.com/2026/10/22/LOOP-AutoResearch.html",
+    "published_at": "2026-10-31T07:34:42+00:00",
+    "summary_raw": "本文分享这套系统的设计理念、架构演进与可信度设计，希望对大家有所帮助或启发。",
+    "tags": [
+      "engineering",
+      "java"
+    ],
+    "extra": {
+      "author": "",
+      "source_weight": 5,
+      "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+      "knowledge": {
+        "concept": "Agent 评测",
+        "one_liner": "用可重复的任务集衡量 Agent 的完成质量，而不是只看单次演示。",
+        "why_it_matters": "没有评测就无法判断改动是优化还是回归。",
+        "learning_path": [
+          "定义 10 个带标准答案的任务",
+          "每任务跑 2-3 次",
+          "记录失败类型并迭代"
+        ],
+        "difficulty": 3
+      }
+    },
+    "fetched_at": "2026-10-31T07:34:42+00:00",
+    "score": 86.7,
+    "cluster_id": "e66c70421662da86",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "美团技术团队",
+        "title": "从 LOOP 到图探索 —— 算法模型的 AutoResearch 自进化系统架构演进之路",
+        "url": "https://tech.meituan.com/2026/10/22/LOOP-AutoResearch.html",
+        "published_at": "2026-10-31T07:34:42+00:00"
+      }
+    ],
+    "summary": "本文分享这套系统的设计理念、架构演进与可信度设计，希望对大家有所帮助或启发。",
+    "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+    "knowledge": null
+  },
+  {
+    "id": "b47c0b7fc8e1ab4b",
+    "source_id": "baeldung",
+    "source_name": "Baeldung",
+    "tier": "learning",
+    "title": "Query Transformation in Spring AI Modular RAG",
+    "url": "https://www.baeldung.com/spring-ai-rag-query-transformation",
+    "published_at": "2026-10-30T11:51:20+00:00",
+    "summary_raw": "Learn how to set up query transformation in Spring AI for retrieval augmented generation. The post Query Transformation in Spring AI Modular RAG first appeared on Baeldung .",
+    "tags": [
+      "Spring AI",
+      "LLM",
+      "java",
+      "spring",
+      "tutorial"
+    ],
+    "extra": {
+      "author": "Manfred Ng",
+      "source_weight": 4,
+      "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+      "knowledge": {
+        "concept": "Query Transformation",
+        "one_liner": "在检索前改写用户查询，提升召回质量。",
+        "why_it_matters": "RAG 效果差时，先调查询改写往往比换模型更划算。",
+        "learning_path": [
+          "读 Spring AI RAG 文档",
+          "实现 multi-query 或 HyDE",
+          "用固定评测集对比召回率"
+        ],
+        "difficulty": 3
+      }
+    },
+    "fetched_at": "2026-10-31T07:34:49+00:00",
+    "score": 70.3,
+    "cluster_id": "d33eb6ae5b262a4a",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "Baeldung",
+        "title": "Query Transformation in Spring AI Modular RAG",
+        "url": "https://www.baeldung.com/spring-ai-rag-query-transformation",
+        "published_at": "2026-10-30T11:51:20+00:00"
+      }
+    ],
+    "summary": "Learn how to set up query transformation in Spring AI for retrieval augmented generation. The post Query Transformation in Spring AI Modular RAG first appeared…",
+    "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+    "knowledge": null
+  },
+  {
+    "id": "6cad0bc7b53b265b",
+    "source_id": "infoq_cn",
+    "source_name": "InfoQ 中文",
+    "tier": "learning",
+    "title": "一边拥抱 JDK 27，一边保留 JDK 21：Helidon 开启双轨发布",
+    "url": "https://www.infoq.cn/article/qRZCxTQbL1CwAUy28Zm8?utm_source=rss&utm_medium=article",
+    "published_at": "2026-10-31T15:00:00+00:00",
+    "summary_raw": "点击查看原文>",
+    "tags": [
+      "engineering",
+      "news"
+    ],
+    "extra": {
+      "author": "Michael Redlich",
+      "source_weight": 4,
+      "why": "高质量学习材料，适合补充知识体系或用作实践参考。"
+    },
+    "fetched_at": "2026-10-31T07:34:43+00:00",
+    "score": 74.5,
+    "cluster_id": "517be6b0dee2313e",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "InfoQ 中文",
+        "title": "一边拥抱 JDK 27，一边保留 JDK 21：Helidon 开启双轨发布",
+        "url": "https://www.infoq.cn/article/qRZCxTQbL1CwAUy28Zm8?utm_source=rss&utm_medium=article",
+        "published_at": "2026-10-31T15:00:00+00:00"
+      }
+    ],
+    "summary": "点击查看原文>",
+    "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+    "knowledge": null
+  },
+  {
+    "id": "859223eeb4eee2dd",
+    "source_id": "hellogithub",
+    "source_name": "HelloGitHub",
+    "tier": "learning",
+    "title": "HelloGitHub 第 127 期",
+    "url": "https://hellogithub.com/periodical/volume/127",
+    "published_at": "2026-10-28T00:06:20+00:00",
+    "summary_raw": "本期共有 42 个项目，包含 C 项目 (3)，C# 项目 (1)，C++ 项目 (1)，Go 项目 (4)，JavaScript 项目 (5)，Kotlin 项目 (3)，Python 项目 (5)，Rust 项目 (3)，Skills (4)，Swift 项目 (2)，人工智能 (5)，其它 (5)，开源书籍 (1)",
+    "tags": [
+      "Skills",
+      "C 项目",
+      "Kotlin 项目",
+      "C# 项目",
+      "人工智能",
+      "其它",
+      "JavaScript 项目",
+      "Python 项目",
+      "github",
+      "opensource"
+    ],
+    "extra": {
+      "author": "",
+      "source_weight": 4,
+      "why": "高质量学习材料，适合补充知识体系或用作实践参考。"
+    },
+    "fetched_at": "2026-10-31T07:34:43+00:00",
+    "score": 51.0,
+    "cluster_id": "b05f5a11c460bfd8",
+    "cluster_size": 1,
+    "members": [
+      {
+        "source_name": "HelloGitHub",
+        "title": "HelloGitHub 第 127 期",
+        "url": "https://hellogithub.com/periodical/volume/127",
+        "published_at": "2026-10-28T00:06:20+00:00"
+      }
+    ],
+    "summary": "本期共有 42 个项目，包含 C 项目 (3)，C# 项目 (1)，C++ 项目 (1)，Go 项目 (4)，JavaScript 项目 (5)，Kotlin 项目 (3)，Python 项目 (5)，Rust 项目 (3)，Skills (4)，Swift 项目 (2)，人工智能 (5)，其它 (5)，开源书籍 (…",
+    "why": "高质量学习材料，适合补充知识体系或用作实践参考。",
+    "knowledge": null
+  }
+]

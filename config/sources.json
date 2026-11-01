@@ -1,0 +1,300 @@
+{
+  "settings": {
+    "timezone": "Asia/Shanghai",
+    "window_hours": 720,
+    "max_items_per_source": 20,
+    "github_trending_limit": 15,
+    "github_search_per_page": 10,
+    "llm": {
+      "enabled": true,
+      "provider": "deepseek",
+      "base_url": "https://api.deepseek.com",
+      "model": "deepseek-chat",
+      "max_items": 30,
+      "min_score": 35,
+      "batch_size": 8,
+      "timeout_seconds": 60
+    },
+    "scoring": {
+      "source": 0.35,
+      "recency": 0.3,
+      "momentum": 0.2,
+      "learning": 0.15,
+      "recency_half_life_hours": 36
+    },
+    "diversity": {
+      "top_per_source": 2,
+      "decay": 0.94
+    }
+  },
+  "sources": [
+    {
+      "id": "claude_code_releases",
+      "name": "Claude Code Releases",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "weight": 5,
+      "tags": [
+        "claude-code",
+        "agent",
+        "release"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "anthropic_news",
+      "name": "Anthropic News",
+      "tier": "official",
+      "type": "html_monitor",
+      "url": "https://www.anthropic.com/news",
+      "weight": 5,
+      "tags": [
+        "anthropic",
+        "model"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "openai_news",
+      "name": "OpenAI News",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://openai.com/news/rss.xml",
+      "weight": 5,
+      "tags": [
+        "openai",
+        "model"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "github_changelog",
+      "name": "GitHub Changelog",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://github.blog/changelog/feed/",
+      "weight": 5,
+      "tags": [
+        "github",
+        "platform"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "github_blog",
+      "name": "GitHub Blog",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://github.blog/feed/",
+      "weight": 4,
+      "tags": [
+        "github",
+        "opensource"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "mcp_releases",
+      "name": "MCP Releases",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/releases.atom",
+      "weight": 5,
+      "tags": [
+        "mcp",
+        "protocol",
+        "release"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "langchain4j_releases",
+      "name": "LangChain4j Releases",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://github.com/langchain4j/langchain4j/releases.atom",
+      "weight": 5,
+      "tags": [
+        "java",
+        "langchain4j",
+        "release"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "spring_blog",
+      "name": "Spring Blog",
+      "tier": "official",
+      "type": "feed",
+      "url": "https://spring.io/blog.atom",
+      "weight": 4,
+      "tags": [
+        "java",
+        "spring"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "deepseek_docs",
+      "name": "DeepSeek News",
+      "tier": "official",
+      "type": "html_monitor",
+      "url": "https://api-docs.deepseek.com/news",
+      "weight": 4,
+      "tags": [
+        "deepseek",
+        "model"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "volcengine_ark_docs",
+      "name": "火山方舟 Docs",
+      "tier": "official",
+      "type": "html_monitor",
+      "url": "https://docs.volcengine.com/docs/ark?lang=zh",
+      "weight": 4,
+      "tags": [
+        "volcengine",
+        "ark",
+        "model"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "github_trending",
+      "name": "GitHub Trending",
+      "tier": "github",
+      "type": "github_trending",
+      "url": "https://github.com/trending?since=daily",
+      "weight": 5,
+      "tags": [
+        "github",
+        "trending"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "github_new_repos",
+      "name": "GitHub New Repos",
+      "tier": "github",
+      "type": "github_search",
+      "queries": [
+        "created:>{date_7d} topic:ai-agents fork:false archived:false stars:>100",
+        "created:>{date_7d} topic:mcp fork:false archived:false stars:>100",
+        "created:>{date_7d} topic:llm fork:false archived:false stars:>100",
+        "created:>{date_7d} language:java fork:false archived:false stars:>100"
+      ],
+      "weight": 5,
+      "tags": [
+        "github",
+        "new",
+        "trending"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "github_watchlist",
+      "name": "GitHub Watchlist Releases",
+      "tier": "github",
+      "type": "github_watchlist",
+      "repos": [
+        "anthropics/claude-code",
+        "langchain4j/langchain4j",
+        "spring-projects/spring-boot",
+        "modelcontextprotocol/modelcontextprotocol",
+        "langchain-ai/langchain",
+        "run-llama/llama_index",
+        "ollama/ollama",
+        "vllm-project/vllm"
+      ],
+      "weight": 5,
+      "tags": [
+        "github",
+        "release",
+        "watchlist"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "simon_willison",
+      "name": "Simon Willison",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://simonwillison.net/atom/everything/",
+      "weight": 5,
+      "tags": [
+        "llm",
+        "hands-on"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "meituan_tech",
+      "name": "美团技术团队",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://tech.meituan.com/rss.xml",
+      "weight": 5,
+      "tags": [
+        "engineering",
+        "java"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "baeldung",
+      "name": "Baeldung",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://www.baeldung.com/feed",
+      "weight": 4,
+      "tags": [
+        "java",
+        "spring",
+        "tutorial"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "javaguide",
+      "name": "JavaGuide",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://javaguide.cn/rss.xml",
+      "weight": 4,
+      "tags": [
+        "java",
+        "interview"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "infoq_cn",
+      "name": "InfoQ 中文",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://www.infoq.cn/feed",
+      "weight": 4,
+      "tags": [
+        "engineering",
+        "news"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "hellogithub",
+      "name": "HelloGitHub",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://hellogithub.com/rss",
+      "weight": 4,
+      "tags": [
+        "github",
+        "opensource"
+      ],
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>技术雷达 · Tech Radar</title>
+  <meta name="description" content="官方文档、GitHub 趋势与高质量学习站点的每日技术雷达">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23070c17' stroke='%233ee6c4' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='16' fill='none' stroke='%233ee6c4' stroke-opacity='.4'/%3E%3Cpath d='M32 32 L54 20' stroke='%233ee6c4' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%233ee6c4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand">
+        <div class="radar-mark" aria-hidden="true"><i></i><b></b><b></b><b></b></div>
+        <div>
+          <p class="eyebrow">TECH RADAR / SIGNAL OVER NOISE</p>
+          <h1>技术雷达</h1>
+          <p class="tagline">官方文档 · GitHub 趋势 · 学习精选</p>
+        </div>
+      </div>
+      <div class="hero-meta">
+        <div class="meta-row"><span>最后更新</span><strong id="updated">--</strong></div>
+        <div class="meta-row"><span>源健康</span><strong id="healthPill" class="pill">--</strong></div>
+        <div class="meta-row"><span>本期条目</span><strong id="totalItems">--</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <div id="demoBanner" class="demo-banner hidden">
+    当前是演示数据，仅用于预览界面；正式数据请运行 <code>python -m radar run</code> 生成。
+  </div>
+
+  <main>
+    <section class="stats" id="stats" aria-label="概览"></section>
+
+    <section class="controls">
+      <nav class="tabs" id="tabs" aria-label="分类">
+        <button data-tab="all" class="active">全部</button>
+        <button data-tab="official">官方动态</button>
+        <button data-tab="github">GitHub 趋势</button>
+        <button data-tab="learning">学习精选</button>
+        <button data-tab="knowledge">知识卡片</button>
+        <button data-tab="health">源健康</button>
+      </nav>
+      <div class="filters">
+        <label class="search-wrap">
+          <span class="search-icon" aria-hidden="true"></span>
+          <input id="search" type="search" placeholder="搜索标题、摘要、标签、来源…" autocomplete="off">
+        </label>
+        <select id="timeFilter" aria-label="时间范围">
+          <option value="24">24 小时</option>
+          <option value="168" selected>7 天</option>
+          <option value="720">30 天</option>
+          <option value="0">全部</option>
+        </select>
+        <select id="sort" aria-label="排序">
+          <option value="score" selected>按信号强度</option>
+          <option value="latest">按时间</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="layout" id="mainLayout">
+      <div class="feed" id="feed" aria-live="polite"></div>
+      <aside class="sidebar">
+        <div class="panel">
+          <div class="panel-head"><h2>GitHub 升温榜</h2><span class="panel-kicker">momentum</span></div>
+          <div id="momentum" class="mini-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>知识卡片</h2><span class="panel-kicker">learning</span></div>
+          <div id="knowledgeMini" class="mini-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>14 天产出</h2><span class="panel-kicker">history</span></div>
+          <div id="historyChart" class="history-chart"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="healthView" class="hidden">
+      <div class="panel">
+        <div class="panel-head"><h2>源健康</h2><span class="panel-kicker">source health</span></div>
+        <p class="health-note">状态为 <code>baseline</code> 表示第一次抓取，已记录页面指纹；之后检测到变化才会产出条目。</p>
+        <div class="table-wrap">
+          <table id="healthTable">
+            <thead>
+              <tr><th>来源</th><th>层级</th><th>状态</th><th>条目</th><th>最近条目</th><th>错误</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Tech Radar · 只聚合标题、摘要与链接，不转载全文</span>
+    <span id="footerStats"></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
