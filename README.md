@@ -33,11 +33,11 @@
 | 学习 | Simon Willison | `simonwillison.net/atom/everything/` | Atom |
 | 学习 | 美团技术团队 | `tech.meituan.com/rss.xml` | RSS |
 | 学习 | Baeldung | `baeldung.com/feed` | RSS |
-| 学习 | JavaGuide | `javaguide.cn/rss.xml` | RSS |
+| 学习 | Inside Java | `inside.java/feed.xml` | Atom |
 | 学习 | InfoQ 中文 | `infoq.cn/feed` | RSS |
 | 学习 | HelloGitHub | `hellogithub.com/rss` | RSS |
 
-> 源清单是可审计的：`config/sources.json` 里每个源都有 `tier`、`weight`、`type`、`enabled`。
+> 源清单是可审计的：`config/sources.json` 里每个源都有 `tier`、`weight`、`type`、`enabled`。JavaGuide feed 自 2026-08-16 停更，已设置 `enabled: false`，暂不参与采集。
 
 ---
 
@@ -199,6 +199,8 @@ python -m radar run
 }
 ```
 
+> `timezone_offset_hours`（可选）：当源把本地时间标成 GMT 时用于修正，例如 InfoQ 中文设为 `-8`。
+
 支持的 `type`：
 
 | type | 用途 | 关键字段 |
@@ -257,8 +259,8 @@ tech-radar/
 - 不复制 GPL/AGPL 项目代码；本项目只通过公开 RSS/API 消费数据。
 - LLM 不可用时知识卡片为空，这是预期降级，不是故障。
 - 某个源临时失败（超时/403）时，上一轮该源的条目会缓存续用，卡片标「缓存」；数据不是本次新抓的，源健康页仍显示 error。
-- **JavaGuide feed 已停更**：最新条目停在 2026-08-16，健康检查 ok 但被 30 天窗口过滤后为 0 条，建议替换或禁用。
-- **InfoQ feed 时间戳偏差**：把北京时间标成 GMT，条目时间比真实时间晚 8 小时；会出现「未来时间」条目并导致 recency 虚高，待修正。
+- **JavaGuide feed 已停更**：最新条目停在 2026-08-16，已禁用；由 Inside Java 替代。
+- **InfoQ feed 时间戳偏差**：把北京时间标成 GMT，已通过 `timezone_offset_hours: -8` 修正；若后续再出现未来时间条目，先核对该配置。
 
 ---
 

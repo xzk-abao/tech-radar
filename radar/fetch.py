@@ -59,15 +59,17 @@ def _get(url: str, timeout: int = DEFAULT_TIMEOUT) -> tuple[requests.Response | 
         return None, f"{type(exc).__name__}: {exc}", latency
 
 
-def _entry_datetime(entry: Any) -> str:
+def _entry_datetime(entry: Any, source: dict[str, Any] | None = None) -> str:
+    """Normalize an entry timestamp; some feeds mislabel local time as GMT."""
+    offset = timedelta(hours=float((source or {}).get("timezone_offset_hours", 0)))
     for key in ("published_parsed", "updated_parsed", "created_parsed"):
         value = entry.get(key)
         if value:
-            return iso(parse_datetime(value))
+            return iso(parse_datetime(value) + offset)
     for key in ("published", "updated", "created"):
         value = entry.get(key)
         if value:
-            return iso(parse_datetime(value))
+            return iso(parse_datetime(value) + offset)
     return iso()
 
 
@@ -88,7 +90,7 @@ def _feed_item(entry: Any, source: dict[str, Any]) -> Item | None:
         except (IndexError, AttributeError, TypeError):
             raw = ""
     tags = [clean_text(t.get("term", ""), 40) for t in (entry.get("tags") or []) if t.get("term")]
-    published_at = _entry_datetime(entry)
+    published_at = _entry_datetime(entry, source)
     return Item(
         id=stable_id(source["id"], link, title),
         source_id=source["id"],

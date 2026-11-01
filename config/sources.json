@@ -268,6 +268,20 @@
         "java",
         "interview"
       ],
+      "enabled": false
+    },
+    {
+      "id": "inside_java",
+      "name": "Inside Java",
+      "tier": "learning",
+      "type": "feed",
+      "url": "https://inside.java/feed.xml",
+      "weight": 5,
+      "tags": [
+        "java",
+        "jvm",
+        "openjdk"
+      ],
       "enabled": true
     },
     {
@@ -281,6 +295,7 @@
         "engineering",
         "news"
       ],
+      "timezone_offset_hours": -8,
       "enabled": true
     },
     {
