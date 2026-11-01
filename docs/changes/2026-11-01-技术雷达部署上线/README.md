@@ -27,6 +27,7 @@ v1 已在本机跑通，但数据停在 2026-10-31 15:56，且项目没有远程
 | Pages | `POST /repos/xzk-abao/tech-radar/pages`，`build_type=workflow`，由 GitHub Actions 发布 |
 | Secret | `DEEPSEEK_API_KEY` 通过仓库 Actions 公钥加密写入 secret；值未落盘、未进入提交 |
 | 自动化 | `.github/workflows/radar.yml`：push / 手动触发 + 每 2 小时 schedule；`actions/cache` 持久化 `data/state` 与 `data/history` |
+| 前端深链 | `web/app.js`：支持 `?tab=knowledge`、`#knowledge`、`#health`，第二次部署后上线 |
 
 ## 设计要点 / 关键决策
 
@@ -41,7 +42,8 @@ v1 已在本机跑通，但数据停在 2026-10-31 15:56，且项目没有远程
 | 验证项 | 结果 |
 |---|---|
 | CI 单元测试 | **23 passed**（workflow 的 Run tests 步骤成功） |
-| Workflow run | [41301830363](https://github.com/xzk-abao/tech-radar/actions/runs/41301830363)：build success（11:25:42–11:26:43 UTC），deploy success（11:26:47–11:27:01 UTC） |
+| Workflow run（首轮） | [41301830363](https://github.com/xzk-abao/tech-radar/actions/runs/41301830363)：build success（11:25:42–11:26:43 UTC），deploy success（11:26:47–11:27:01 UTC） |
+| Workflow run（深链） | [41308522290](https://github.com/xzk-abao/tech-radar/actions/runs/41308522290)：build success（12:52:16–12:52:35 UTC），deploy success（12:52:39–12:52:50 UTC）；线上 155 条 / 24 张卡片；`?tab=knowledge`、`#health` 深链实测通过，控制台 0 error；截图 `evidence/live-knowledge.png` |
 | 线上页面 | <https://xzk-abao.github.io/tech-radar/> → HTTP 200，标题「技术雷达 · Tech Radar」 |
 | 线上数据 | `data/items.json` → **155 条**；official 57 / github 42 / learning 56；**24 张知识卡片**；`generated_at=2026-11-01T11:26:37Z`；`demo=false` |
 | 源健康 | **19/19 ok，0 error**；3 个 baseline（anthropic_news、deepseek_docs、volcengine_ark_docs）；14 个源有最终条目 |
@@ -67,6 +69,7 @@ v1 已在本机跑通，但数据停在 2026-10-31 15:56，且项目没有远程
 - 线上地址：<https://xzk-abao.github.io/tech-radar/>
 - 仓库：<https://github.com/xzk-abao/tech-radar>
 - 首轮 run：<https://github.com/xzk-abao/tech-radar/actions/runs/41301830363>
+- 深链部署 run：<https://github.com/xzk-abao/tech-radar/actions/runs/41308522290>
 - workflow：`../../../.github/workflows/radar.yml`
-- 截图：`evidence/live-home.png`
+- 截图：`evidence/live-home.png`、`evidence/live-knowledge.png`
 - 上一版归档：`../2026-10-31-技术雷达v1/`

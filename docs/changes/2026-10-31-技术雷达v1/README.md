@@ -1,6 +1,6 @@
 # 2026-10-31 技术雷达 v1
 
-- **状态**：已完成（本地可运行，待部署 GitHub Pages）
+- **状态**：已完成并部署（2026-11-01 上线 GitHub Pages）
 - **需求来源**：用户提出“做一个雷达工具，实时搜索 GitHub 和知名网站的热门工具/知识点，总结分析，先看有没有类似工具”
 - **涉及端**：Python 采集管线 + 静态网页仪表盘 + GitHub Actions 定时任务
 - **完成时间**：2026-10-31
@@ -106,7 +106,7 @@ python -m radar serve --port 8787
 
 ## 后续（Roadmap）
 
-1. 部署到 GitHub Pages，配置 `DEEPSEEK_API_KEY` secret，观察一周源健康。
+1. ✅ 已部署到 GitHub Pages（<https://xzk-abao.github.io/tech-radar/>），配置 `DEEPSEEK_API_KEY` secret；接下来观察一周源健康。
 2. ✅ 知识卡片导出到 `D:\mdStudy\personal-knowledge-base\AI\04-资料库\AI工具雷达\`（已实现 `python -m radar export`，用标记块保护手写内容）。
 3. Phase 2：Java 21 + Spring Boot + LangChain4j 重写采集/分析，复用同一静态前端（可作为作品集）。
 4. 历史趋势页、主题雷达图、企业微信/飞书推送。
@@ -114,6 +114,7 @@ python -m radar serve --port 8787
 ## 相关资料
 
 - 项目 README：`../../../README.md`
+- 部署归档：`../2026-11-01-技术雷达部署上线/`
 - 桌面截图：`evidence/dashboard-desktop.png`
 - 知识卡片截图：`evidence/dashboard-knowledge.png`
 - 源清单：`../../../config/sources.json`

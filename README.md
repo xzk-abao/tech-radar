@@ -7,6 +7,8 @@
 - LLM 可选：有 key 生成摘要 + 知识卡片，没 key 自动降级为规则摘要
 - 纯静态站：采集跑 GitHub Actions，页面部署 GitHub Pages，零服务器
 
+**线上地址**：<https://xzk-abao.github.io/tech-radar/>（GitHub Actions 每 2 小时更新）
+
 ![桌面预览](docs/screenshot-desktop.png)
 
 ---
@@ -154,6 +156,8 @@ python -m radar run
 
 ## 部署到 GitHub Pages
 
+> 本仓库已部署：<https://xzk-abao.github.io/tech-radar/>（2026-11-01）。
+
 1. 新建 GitHub 仓库并推送本项目。
 2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
 3. 可选：**Settings → Secrets and variables → Actions** 添加 `DEEPSEEK_API_KEY`。
@@ -253,13 +257,16 @@ tech-radar/
 - 不复制 GPL/AGPL 项目代码；本项目只通过公开 RSS/API 消费数据。
 - LLM 不可用时知识卡片为空，这是预期降级，不是故障。
 - 某个源临时失败（超时/403）时，上一轮该源的条目会缓存续用，卡片标「缓存」；数据不是本次新抓的，源健康页仍显示 error。
+- **JavaGuide feed 已停更**：最新条目停在 2026-08-16，健康检查 ok 但被 30 天窗口过滤后为 0 条，建议替换或禁用。
+- **InfoQ feed 时间戳偏差**：把北京时间标成 GMT，条目时间比真实时间晚 8 小时；会出现「未来时间」条目并导致 recency 虚高，待修正。
 
 ---
 
-## 验证记录（2026-10-31）
+## 验证记录（2026-10-31 ~ 2026-11-01）
 
 - `python -m pytest -q` → **23 passed**
-- 最近一次运行（2026-11-01）→ **154 条，19/19 源健康**（1 个 baseline）；此前多次运行 130–152 条，网络波动时 14–18/19
+- 最近一次本机运行（2026-11-01）→ **154 条，19/19 源健康**（1 个 baseline）；此前多次运行 130–152 条，网络波动时 14–18/19
+- GitHub Actions 生产部署（2026-11-01）→ 首轮 **155 条、19/19 源健康、24 张知识卡片**；Pages 部署成功，`?tab=knowledge` / `#health` 深链已上线，控制台 0 error
 - DeepSeek 已接入 → **26 张知识卡片，3 次新调用 + 10 次缓存命中，0 报错**；未命中 LLM 的条目自动降级
 - Obsidian 导出 → `AI\04-资料库\AI工具雷达\2026-11-01-技术雷达.md`（22KB，含 26 张知识卡片、三层条目、源健康）
 - 演示数据 → **11 条，4 张知识卡片**
