@@ -45,7 +45,7 @@ class SourceHealth:
     source_id: str
     source_name: str
     tier: str
-    status: str = "unknown"  # ok | error | skipped | baseline
+    status: str = "unknown"  # ok | stale | error | skipped | baseline
     http_status: int | None = None
     items: int = 0
     error: str = ""

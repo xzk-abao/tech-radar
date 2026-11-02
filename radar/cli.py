@@ -78,7 +78,8 @@ def run(args: argparse.Namespace) -> int:
     print(f"radar: {stats['total_items']} items, {stats['clusters']} clusters, "
           f"{stats['knowledge_cards']} knowledge cards")
     print(f"health: {stats['sources_ok']}/{stats['sources_total']} sources ok, "
-          f"{stats['sources_error']} errors, {stats['sources_baseline']} baseline")
+          f"{stats['sources_error']} errors, {stats['sources_stale']} stale, "
+          f"{stats['sources_baseline']} baseline")
     if llm_stats.get("errors"):
         print("llm notes: " + "; ".join(llm_stats["errors"])[:300])
     _print_health(healths)

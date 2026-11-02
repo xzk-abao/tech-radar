@@ -2,7 +2,7 @@ import json
 import os
 
 from radar.models import Item, SourceHealth
-from radar.store import build_public, write_dataset
+from radar.store import _dataset_stats, build_public, write_dataset
 
 
 def test_write_dataset_and_build_public(tmp_path):
@@ -38,3 +38,15 @@ def test_write_dataset_and_build_public(tmp_path):
     assert os.path.exists(out_dir / "data" / "items.json")
     saved = json.loads((out_dir / "data" / "items.json").read_text(encoding="utf-8"))
     assert saved["items"][0]["title"] == "Title"
+
+
+def test_stale_sources_are_not_counted_as_ok():
+    healths = [
+        SourceHealth(source_id="ok", source_name="OK", tier="official", status="ok"),
+        SourceHealth(source_id="stale", source_name="Stale", tier="official", status="stale"),
+    ]
+
+    stats = _dataset_stats([], healths, {})
+
+    assert stats["sources_ok"] == 1
+    assert stats["sources_stale"] == 1

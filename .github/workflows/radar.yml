@@ -40,11 +40,13 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
-      # State (monitors, star history, LLM cache) must survive ephemeral runners.
+      # State (monitors, star history, LLM cache) and the previous dataset must
+      # survive ephemeral runners: carry_forward_failed_sources reads items.json.
       - name: Restore radar state
         uses: actions/cache@v4
         with:
           path: |
+            data/items.json
             data/state
             data/history
           key: radar-state-${{ github.run_id }}

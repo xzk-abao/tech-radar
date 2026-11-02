@@ -73,6 +73,19 @@ def _entry_datetime(entry: Any, source: dict[str, Any] | None = None) -> str:
     return iso()
 
 
+def _mark_stale_if_needed(health: SourceHealth, items: list[Item], settings: dict[str, Any]) -> None:
+    """Flag a reachable source whose newest item is outside the retention window."""
+    if health.status != "ok" or not items:
+        return
+    window_hours = int(settings.get("window_hours", 720))
+    cutoff = utcnow() - timedelta(hours=window_hours)
+    newest = max(parse_datetime(item.published_at) for item in items)
+    if newest < cutoff:
+        note = f"no items within {window_hours}h window; latest {iso(newest)}"
+        health.status = "stale"
+        health.error = truncate(f"{health.error}; {note}" if health.error else note, 300)
+
+
 def _feed_item(entry: Any, source: dict[str, Any]) -> Item | None:
     title = clean_text(entry.get("title", ""), 300)
     link = entry.get("link") or ""
@@ -130,6 +143,7 @@ def fetch_feed(source: dict[str, Any], settings: dict[str, Any]) -> tuple[list[I
     health.status = "ok"
     health.items = len(items)
     health.last_item_at = max((i.published_at for i in items), default=None)
+    _mark_stale_if_needed(health, items, settings)
     return items, health
 
 
@@ -200,6 +214,7 @@ def _github_search_items(source: dict[str, Any], settings: dict[str, Any]) -> tu
         health.last_item_at = max((i.published_at for i in items), default=None)
         if errors:
             health.error = truncate("; ".join(errors), 300)
+        _mark_stale_if_needed(health, items, settings)
     else:
         health.status = "error"
         health.error = truncate("; ".join(errors) or "no items", 300)
@@ -256,6 +271,7 @@ def _github_watchlist_items(source: dict[str, Any], settings: dict[str, Any]) ->
         health.last_item_at = max((i.published_at for i in items), default=None)
         if errors:
             health.error = truncate("; ".join(errors), 300)
+        _mark_stale_if_needed(health, items, settings)
     else:
         health.status = "error"
         health.error = truncate("; ".join(errors) or "no releases", 300)

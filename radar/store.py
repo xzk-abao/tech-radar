@@ -51,6 +51,7 @@ def _dataset_stats(items: list[Item], healths: list[SourceHealth], llm_stats: di
         "sources_total": len(healths),
         "sources_ok": ok,
         "sources_error": sum(1 for h in healths if h.status == "error"),
+        "sources_stale": sum(1 for h in healths if h.status == "stale"),
         "sources_baseline": sum(1 for h in healths if h.status == "baseline"),
         "llm": llm_stats,
     }

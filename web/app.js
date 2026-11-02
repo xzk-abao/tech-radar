@@ -136,10 +136,12 @@
     $("#totalItems").textContent = String(stats.total_items || 0);
     const ok = stats.sources_ok || 0;
     const total = stats.sources_total || 0;
+    const stale = stats.sources_stale || 0;
     const ratio = total ? ok / total : 0;
     const pill = $("#healthPill");
     pill.textContent = `${ok}/${total}`;
-    pill.className = `pill${ratio < 0.5 ? " bad" : ratio < 0.8 ? " warn" : ""}`;
+    pill.title = stale ? `${stale} 个源最近条目已超出保留窗口` : "";
+    pill.className = `pill${ratio < 0.5 ? " bad" : ratio < 0.8 || stale > 0 ? " warn" : ""}`;
     $("#demoBanner").classList.toggle("hidden", !state.dataset.demo);
     $("#footerStats").textContent = `${total} 个源 · LLM ${stats.llm && stats.llm.model ? stats.llm.model : "fallback"}`;
   }
@@ -310,7 +312,7 @@
         <td><span class="status ${esc(row.status)}">${esc(row.status)}</span></td>
         <td>${esc(row.items || 0)}</td>
         <td>${row.last_item_at ? esc(fmtDateTime(row.last_item_at)) : "--"}</td>
-        <td class="err-text">${esc(row.error || "")}</td>
+        <td class="err-text ${esc(row.status)}">${esc(row.error || "")}</td>
       </tr>
     `).join("");
   }
