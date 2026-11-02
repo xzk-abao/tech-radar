@@ -7,14 +7,17 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Scope per ref so PR runs cannot cancel a main deploy in progress.
 concurrency:
-  group: tech-radar-pages
+  group: tech-radar-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -57,11 +60,13 @@ jobs:
         run: python -m radar run
 
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: public
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

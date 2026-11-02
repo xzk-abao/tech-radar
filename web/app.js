@@ -125,8 +125,11 @@
     const coverage = Number.isFinite(stats.sources_with_items)
       ? `${stats.sources_with_items}/${stats.sources_total || 0} 源有产出 · `
       : "";
+    const clusterLabel = (stats.deduped || 0) > 0
+      ? `${coverage}${stats.raw_items || stats.total_items || 0} 原始 → ${stats.clusters || 0} 事件簇`
+      : `${coverage}${stats.clusters || 0} 个事件簇`;
     const cards = [
-      ["本期条目", stats.total_items || 0, `${coverage}${stats.clusters || 0} 个事件簇`],
+      ["本期条目", stats.total_items || 0, clusterLabel],
       ["官方动态", tiers.official || 0, "发布 · 文档 · 版本"],
       ["GitHub 趋势", tiers.github || 0, "新仓 · 升温 · 发版"],
       ["学习精选", tiers.learning || 0, "教程 · 实战 · 架构"],

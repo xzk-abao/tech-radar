@@ -21,7 +21,7 @@ from .store import (
     write_dataset,
 )
 from .summarize import summarize_items
-from .util import iso, load_json, utcnow
+from .util import iso, load_json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_CONFIG = os.path.join(ROOT, "config", "sources.json")
@@ -71,12 +71,12 @@ def run(args: argparse.Namespace) -> int:
 
     llm_stats = summarize_items(primaries, settings.get("llm", {}), state["llm_cache_path"])
 
-    dataset = write_dataset(args.out, primaries, healths, llm_stats, config)
+    dataset = write_dataset(args.out, primaries, healths, llm_stats, config, raw_items=len(items))
     save_state(args.out, state)
     build_public(args.out, args.web, args.public)
 
     stats = dataset["stats"]
-    print(f"radar: {stats['total_items']} items, {stats['clusters']} clusters, "
+    print(f"radar: {stats['raw_items']} raw -> {stats['total_items']} items, "
           f"{stats['knowledge_cards']} knowledge cards")
     print(f"health: {stats['sources_ok']}/{stats['sources_total']} sources ok, "
           f"{stats['sources_with_items']} with items, {stats['sources_error']} errors, "
@@ -168,7 +168,7 @@ def demo(args: argparse.Namespace) -> int:
         )
         for s in config.get("sources", []) if s.get("enabled", True)
     ]
-    dataset = write_dataset(args.out, primaries, healths, llm_stats, config, demo=True)
+    dataset = write_dataset(args.out, primaries, healths, llm_stats, config, demo=True, raw_items=len(items))
     build_public(args.out, args.web, args.public)
     print(f"demo: {dataset['stats']['total_items']} items -> {args.public}")
     return 0

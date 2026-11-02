@@ -4,11 +4,11 @@ from __future__ import annotations
 import os
 import shutil
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from .models import Item, SourceHealth, item_from_dict
-from .util import iso, load_json, parse_datetime, save_json, url_key, utcnow
+from .util import iso, load_json, local_date, parse_datetime, save_json, url_key, utcnow
 
 OUTPUT_VERSION = 1
 
@@ -38,13 +38,21 @@ def save_state(data_dir: str, state: dict[str, Any]) -> None:
     save_json(paths["stars"], state.get("stars", {}))
 
 
-def _dataset_stats(items: list[Item], healths: list[SourceHealth], llm_stats: dict[str, Any]) -> dict[str, Any]:
+def _dataset_stats(
+    items: list[Item],
+    healths: list[SourceHealth],
+    llm_stats: dict[str, Any],
+    raw_items: int | None = None,
+) -> dict[str, Any]:
     by_tier = {"official": 0, "github": 0, "learning": 0}
     for item in items:
         if item.tier in by_tier:
             by_tier[item.tier] += 1
     ok = sum(1 for h in healths if h.status in {"ok", "baseline"})
+    raw = len(items) if raw_items is None else int(raw_items)
     return {
+        "raw_items": raw,
+        "deduped": max(0, raw - len(items)),
         "total_items": len(items),
         "by_tier": by_tier,
         "knowledge_cards": sum(1 for item in items if item.knowledge),
@@ -66,28 +74,30 @@ def write_dataset(
     llm_stats: dict[str, Any],
     config: dict[str, Any],
     demo: bool = False,
+    raw_items: int | None = None,
 ) -> dict[str, Any]:
     items = sorted(items, key=lambda i: (i.score, i.published_at), reverse=True)
     effective = Counter(item.source_id for item in items)
     for health in healths:
         health.effective_items = effective.get(health.source_id, 0)
     generated_at = iso()
+    tz_name = config.get("settings", {}).get("timezone", "Asia/Shanghai")
     dataset = {
         "version": OUTPUT_VERSION,
         "generated_at": generated_at,
         "demo": demo,
         "settings": {
-            "timezone": config.get("settings", {}).get("timezone", "Asia/Shanghai"),
+            "timezone": tz_name,
             "window_hours": config.get("settings", {}).get("window_hours", 168),
         },
-        "stats": _dataset_stats(items, healths, llm_stats),
+        "stats": _dataset_stats(items, healths, llm_stats, raw_items=raw_items),
         "health": [h.to_dict() for h in healths],
         "items": [item.to_dict() for item in items],
     }
     save_json(os.path.join(data_dir, "items.json"), dataset)
 
     history_dir = os.path.join(data_dir, "history")
-    today = utcnow().strftime("%Y-%m-%d")
+    today = local_date(tz_name)
     snapshot = {
         "date": today,
         "generated_at": generated_at,
@@ -120,12 +130,12 @@ def write_dataset(
     })
     index = sorted(index, key=lambda row: row.get("date", ""))
     save_json(index_path, index)
-    _prune_history(history_dir, index, days=180)
+    _prune_history(history_dir, index, days=180, tz_name=tz_name)
     return dataset
 
 
-def _prune_history(history_dir: str, index: list[dict[str, Any]], days: int) -> None:
-    cutoff = (utcnow() - timedelta(days=days)).strftime("%Y-%m-%d")
+def _prune_history(history_dir: str, index: list[dict[str, Any]], days: int, tz_name: str) -> None:
+    cutoff = local_date(tz_name, utcnow() - timedelta(days=days))
     keep: list[dict[str, Any]] = []
     for row in index:
         date = row.get("date", "")
