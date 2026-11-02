@@ -15,6 +15,7 @@
 
   const TIER_LABEL = { official: "官方动态", github: "GitHub 趋势", learning: "学习精选" };
   const TIER_CLASS = { official: "official", github: "github", learning: "learning" };
+  const ALLOWED_TABS = ["all", "official", "github", "learning", "knowledge", "health"];
 
   function esc(value) {
     return String(value == null ? "" : value)
@@ -23,6 +24,15 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function safeUrl(value) {
+    try {
+      const url = new URL(String(value || ""), location.href);
+      return url.protocol === "http:" || url.protocol === "https:" ? url.href : "#";
+    } catch (error) {
+      return "#";
+    }
   }
 
   function parseDate(value) {
@@ -112,8 +122,11 @@
   function renderStats() {
     const stats = (state.dataset && state.dataset.stats) || {};
     const tiers = stats.by_tier || {};
+    const coverage = Number.isFinite(stats.sources_with_items)
+      ? `${stats.sources_with_items}/${stats.sources_total || 0} 源有产出 · `
+      : "";
     const cards = [
-      ["本期条目", stats.total_items || 0, `${stats.clusters || 0} 个事件簇`],
+      ["本期条目", stats.total_items || 0, `${coverage}${stats.clusters || 0} 个事件簇`],
       ["官方动态", tiers.official || 0, "发布 · 文档 · 版本"],
       ["GitHub 趋势", tiers.github || 0, "新仓 · 升温 · 发版"],
       ["学习精选", tiers.learning || 0, "教程 · 实战 · 架构"],
@@ -136,10 +149,16 @@
     $("#totalItems").textContent = String(stats.total_items || 0);
     const ok = stats.sources_ok || 0;
     const total = stats.sources_total || 0;
+    const stale = stats.sources_stale || 0;
+    const withItems = stats.sources_with_items;
     const ratio = total ? ok / total : 0;
     const pill = $("#healthPill");
+    const hints = [];
+    if (Number.isFinite(withItems)) hints.push(`${withItems} 个源有最终条目`);
+    if (stale) hints.push(`${stale} 个源最近条目已超出保留窗口`);
     pill.textContent = `${ok}/${total}`;
-    pill.className = `pill${ratio < 0.5 ? " bad" : ratio < 0.8 ? " warn" : ""}`;
+    pill.title = hints.join("；");
+    pill.className = `pill${ratio < 0.5 ? " bad" : ratio < 0.8 || stale > 0 ? " warn" : ""}`;
     $("#demoBanner").classList.toggle("hidden", !state.dataset.demo);
     $("#footerStats").textContent = `${total} 个源 · LLM ${stats.llm && stats.llm.model ? stats.llm.model : "fallback"}`;
   }
@@ -164,12 +183,14 @@
 
   function membersBlock(item) {
     if (!item.members || item.members.length < 2) return "";
+    const sourceCount = new Set(item.members.map((member) => member.source_name)).size;
+    const label = sourceCount > 1 ? `多源 ${item.members.length}` : `同事件 ${item.members.length}`;
     return `
       <details class="members">
-        <summary>多源 ${item.members.length}</summary>
+        <summary>${esc(label)}</summary>
         <ul class="member-list">
           ${item.members.map((member) => `
-            <li>${esc(member.source_name)} · <a href="${esc(member.url)}" target="_blank" rel="noopener noreferrer">${esc(member.title)}</a></li>
+            <li>${esc(member.source_name)} · <a href="${esc(safeUrl(member.url))}" target="_blank" rel="noopener noreferrer">${esc(member.title)}</a></li>
           `).join("")}
         </ul>
       </details>
@@ -184,6 +205,7 @@
         <div class="card-top">
           <span class="badge ${tier}">${esc(TIER_LABEL[item.tier] || item.tier)}</span>
           ${item.extra && item.extra.carried_forward ? '<span class="badge cached">缓存</span>' : ""}
+          ${item.extra && item.extra.future_timestamp ? '<span class="badge cached">时间异常</span>' : ""}
           <span class="source">${esc(item.source_name)}</span>
           <span class="dot"></span>
           <span class="time" title="${esc(item.published_at)}">${esc(timeAgo(item.published_at))}</span>
@@ -192,7 +214,7 @@
             <span class="score-bar"><i style="width:${score}%"></i></span>
           </span>
         </div>
-        <h3><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></h3>
+        <h3><a href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></h3>
         ${item.summary ? `<p class="summary">${esc(item.summary)}</p>` : ""}
         ${item.why ? `<p class="why">为什么值得看：${esc(item.why)}</p>` : ""}
         ${(item.tags || []).length ? `<div class="tags">${item.tags.slice(0, 8).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div>` : ""}
@@ -251,7 +273,7 @@
         <div class="mini">
           <span class="mini-rank">${String(index + 1).padStart(2, "0")}</span>
           <div class="mini-body">
-            <a class="mini-title" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>
+            <a class="mini-title" href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>
             <div class="mini-meta">${esc(stars)}${stars && delta ? " · " : ""}<b>${esc(delta)}</b></div>
           </div>
         </div>
@@ -271,7 +293,7 @@
     root.innerHTML = items.map((item) => `
       <div class="mini">
         <div class="mini-body">
-          <a class="mini-title" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.knowledge.concept)}</a>
+          <a class="mini-title" href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener noreferrer">${esc(item.knowledge.concept)}</a>
           <div class="mini-meta">${esc(item.knowledge.one_liner || "")}</div>
         </div>
       </div>
@@ -303,16 +325,22 @@
       tbody.innerHTML = `<tr><td colspan="6">暂无源健康数据</td></tr>`;
       return;
     }
-    tbody.innerHTML = rows.map((row) => `
-      <tr>
-        <td>${esc(row.source_name)}<br><span class="mini-meta">${esc(row.source_id)}</span></td>
-        <td>${esc(TIER_LABEL[row.tier] || row.tier)}</td>
-        <td><span class="status ${esc(row.status)}">${esc(row.status)}</span></td>
-        <td>${esc(row.items || 0)}</td>
-        <td>${row.last_item_at ? esc(fmtDateTime(row.last_item_at)) : "--"}</td>
-        <td class="err-text">${esc(row.error || "")}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML = rows.map((row) => {
+      const effective = row.effective_items == null ? row.items : row.effective_items;
+      const count = effective === row.items
+        ? esc(row.items || 0)
+        : `${esc(row.items || 0)}<br><span class="mini-meta">有效 ${esc(effective)}</span>`;
+      return `
+        <tr>
+          <td>${esc(row.source_name)}<br><span class="mini-meta">${esc(row.source_id)}</span></td>
+          <td>${esc(TIER_LABEL[row.tier] || row.tier)}</td>
+          <td><span class="status ${esc(row.status)}">${esc(row.status)}</span></td>
+          <td>${count}</td>
+          <td>${row.last_item_at ? esc(fmtDateTime(row.last_item_at)) : "--"}</td>
+          <td class="err-text ${esc(row.status)}">${esc(row.error || "")}</td>
+        </tr>
+      `;
+    }).join("");
   }
 
   function render() {
@@ -335,8 +363,7 @@
   }
 
   function setTab(tab, updateHash = true) {
-    const allowed = ["all", "official", "github", "learning", "knowledge", "health"];
-    state.tab = allowed.includes(tab) ? tab : "all";
+    state.tab = ALLOWED_TABS.includes(tab) ? tab : "all";
     if (updateHash) {
       history.replaceState(null, "", state.tab === "all" ? location.pathname : `#${state.tab}`);
     }
@@ -398,7 +425,7 @@
     bindEvents();
     const params = new URLSearchParams(location.search);
     const initialTab = params.get("tab") || location.hash.replace("#", "");
-    if (initialTab) state.tab = initialTab;
+    if (ALLOWED_TABS.includes(initialTab)) state.tab = initialTab;
     window.addEventListener("hashchange", () => {
       setTab(location.hash.replace("#", ""), false);
     });

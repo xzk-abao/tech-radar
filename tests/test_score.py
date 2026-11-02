@@ -38,6 +38,16 @@ def test_apply_scores_prefers_stronger_source():
     assert strong.score > weak.score
 
 
+def test_future_timestamp_reduces_recency_score():
+    settings = {"scoring": {"source": 0.35, "recency": 0.3, "momentum": 0.2, "learning": 0.15, "recency_half_life_hours": 36}}
+    normal = make_item("Same release")
+    future = make_item("Same release", extra={"future_timestamp": True})
+
+    apply_scores([normal, future], settings)
+
+    assert future.score < normal.score
+
+
 def test_star_history_computes_delta():
     state = {}
     item = make_item(extra={"full_name": "owner/repo", "stars": 1200})

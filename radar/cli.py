@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from collections import Counter
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 from .dedupe import cluster_items
@@ -78,7 +79,8 @@ def run(args: argparse.Namespace) -> int:
     print(f"radar: {stats['total_items']} items, {stats['clusters']} clusters, "
           f"{stats['knowledge_cards']} knowledge cards")
     print(f"health: {stats['sources_ok']}/{stats['sources_total']} sources ok, "
-          f"{stats['sources_error']} errors, {stats['sources_baseline']} baseline")
+          f"{stats['sources_with_items']} with items, {stats['sources_error']} errors, "
+          f"{stats['sources_stale']} stale, {stats['sources_baseline']} baseline")
     if llm_stats.get("errors"):
         print("llm notes: " + "; ".join(llm_stats["errors"])[:300])
     _print_health(healths)
@@ -158,9 +160,13 @@ def demo(args: argparse.Namespace) -> int:
         item.summary = item.extra.get("summary") or (item.summary_raw or item.title)[:160]
         item.why = item.extra.get("why", "演示数据：用于预览仪表盘布局。")
         item.knowledge = item.extra.get("knowledge")
+    counts = Counter(item.source_id for item in primaries)
     healths = [
-        SourceHealth(source_id=s["id"], source_name=s["name"], tier=s["tier"], status="ok", checked_at=iso())
-        for s in config.get("sources", [])
+        SourceHealth(
+            source_id=s["id"], source_name=s["name"], tier=s["tier"], status="ok",
+            items=counts.get(s["id"], 0), checked_at=iso(),
+        )
+        for s in config.get("sources", []) if s.get("enabled", True)
     ]
     dataset = write_dataset(args.out, primaries, healths, llm_stats, config, demo=True)
     build_public(args.out, args.web, args.public)

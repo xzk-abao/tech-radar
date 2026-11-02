@@ -46,17 +46,55 @@ def _headers(url: str) -> dict[str, str]:
     return headers
 
 
-def _get(url: str, timeout: int = DEFAULT_TIMEOUT) -> tuple[requests.Response | None, str, int]:
+RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+
+def _get(
+    url: str,
+    timeout: int = DEFAULT_TIMEOUT,
+    attempts: int = 1,
+    backoff: float = 0.0,
+) -> tuple[requests.Response | None, str, int]:
     started = time.monotonic()
-    try:
-        resp = requests.get(url, headers=_headers(url), timeout=timeout)
-        latency = int((time.monotonic() - started) * 1000)
-        if resp.status_code >= 400:
-            return resp, f"HTTP {resp.status_code}", latency
-        return resp, "", latency
-    except requests.RequestException as exc:
-        latency = int((time.monotonic() - started) * 1000)
-        return None, f"{type(exc).__name__}: {exc}", latency
+    attempts = max(1, int(attempts))
+    last_resp: requests.Response | None = None
+    last_error = ""
+    for attempt in range(attempts):
+        try:
+            resp = requests.get(url, headers=_headers(url), timeout=timeout)
+            if resp.status_code < 400:
+                return resp, "", int((time.monotonic() - started) * 1000)
+            last_resp = resp
+            last_error = f"HTTP {resp.status_code}"
+            if resp.status_code not in RETRYABLE_STATUS:
+                break
+        except requests.RequestException as exc:
+            last_resp = None
+            last_error = f"{type(exc).__name__}: {exc}"
+
+        if attempt < attempts - 1:
+            delay = max(0.0, backoff) * (attempt + 1)
+            if last_resp is not None:
+                retry_after = last_resp.headers.get("Retry-After", "").strip()
+                if retry_after.isdigit():
+                    delay = max(delay, min(30, int(retry_after)))
+            if delay > 0:
+                time.sleep(delay)
+
+    return last_resp, last_error, int((time.monotonic() - started) * 1000)
+
+
+def _get_for_source(
+    url: str,
+    settings: dict[str, Any],
+    timeout: int = DEFAULT_TIMEOUT,
+) -> tuple[requests.Response | None, str, int]:
+    return _get(
+        url,
+        timeout=timeout,
+        attempts=int(settings.get("retry_attempts", 3)),
+        backoff=float(settings.get("retry_backoff_seconds", 1.0)),
+    )
 
 
 def _entry_datetime(entry: Any, source: dict[str, Any] | None = None) -> str:
@@ -73,7 +111,44 @@ def _entry_datetime(entry: Any, source: dict[str, Any] | None = None) -> str:
     return iso()
 
 
-def _feed_item(entry: Any, source: dict[str, Any]) -> Item | None:
+DEFAULT_FUTURE_TOLERANCE_HOURS = 2
+
+
+def _normalize_future(
+    published_at: str,
+    extra: dict[str, Any],
+    settings: dict[str, Any],
+) -> str:
+    """Clamp suspicious future timestamps so they cannot dominate recency."""
+    tolerance = float(settings.get("future_tolerance_hours", DEFAULT_FUTURE_TOLERANCE_HOURS))
+    if parse_datetime(published_at) > utcnow() + timedelta(hours=tolerance):
+        extra["future_timestamp"] = True
+        extra["original_published_at"] = published_at
+        return iso()
+    return published_at
+
+
+def _note_future_items(health: SourceHealth, items: list[Item]) -> None:
+    future = sum(1 for item in items if (item.extra or {}).get("future_timestamp"))
+    if future:
+        note = f"{future} future-dated item(s) clamped"
+        health.error = truncate(f"{health.error}; {note}" if health.error else note, 300)
+
+
+def _mark_stale_if_needed(health: SourceHealth, items: list[Item], settings: dict[str, Any]) -> None:
+    """Flag a reachable source whose newest item is outside the retention window."""
+    if health.status != "ok" or not items:
+        return
+    window_hours = int(settings.get("window_hours", 720))
+    cutoff = utcnow() - timedelta(hours=window_hours)
+    newest = max(parse_datetime(item.published_at) for item in items)
+    if newest < cutoff:
+        note = f"no items within {window_hours}h window; latest {iso(newest)}"
+        health.status = "stale"
+        health.error = truncate(f"{health.error}; {note}" if health.error else note, 300)
+
+
+def _feed_item(entry: Any, source: dict[str, Any], settings: dict[str, Any]) -> Item | None:
     title = clean_text(entry.get("title", ""), 300)
     link = entry.get("link") or ""
     if not link:
@@ -90,7 +165,8 @@ def _feed_item(entry: Any, source: dict[str, Any]) -> Item | None:
         except (IndexError, AttributeError, TypeError):
             raw = ""
     tags = [clean_text(t.get("term", ""), 40) for t in (entry.get("tags") or []) if t.get("term")]
-    published_at = _entry_datetime(entry, source)
+    extra = {"author": clean_text(entry.get("author", ""), 80)}
+    published_at = _normalize_future(_entry_datetime(entry, source), extra, settings)
     return Item(
         id=stable_id(source["id"], link, title),
         source_id=source["id"],
@@ -101,7 +177,7 @@ def _feed_item(entry: Any, source: dict[str, Any]) -> Item | None:
         published_at=published_at,
         summary_raw=clean_text(raw, 800),
         tags=tags[:8] + [t for t in source.get("tags", []) if t not in tags][:8],
-        extra={"author": clean_text(entry.get("author", ""), 80)},
+        extra=extra,
         fetched_at=iso(),
     )
 
@@ -111,7 +187,9 @@ def fetch_feed(source: dict[str, Any], settings: dict[str, Any]) -> tuple[list[I
         source_id=source["id"], source_name=source["name"], tier=source["tier"],
         checked_at=iso(),
     )
-    resp, error, latency = _get(source["url"], int(settings.get("timeout_seconds", DEFAULT_TIMEOUT)))
+    resp, error, latency = _get_for_source(
+        source["url"], settings, int(settings.get("timeout_seconds", DEFAULT_TIMEOUT))
+    )
     health.latency_ms = latency
     health.http_status = resp.status_code if resp is not None else None
     if error:
@@ -126,10 +204,12 @@ def fetch_feed(source: dict[str, Any], settings: dict[str, Any]) -> tuple[list[I
         return [], health
 
     limit = int(settings.get("max_items_per_source", 20))
-    items = [item for item in (_feed_item(e, source) for e in feed.entries[:limit]) if item]
+    items = [item for item in (_feed_item(e, source, settings) for e in feed.entries[:limit]) if item]
     health.status = "ok"
     health.items = len(items)
     health.last_item_at = max((i.published_at for i in items), default=None)
+    _note_future_items(health, items)
+    _mark_stale_if_needed(health, items, settings)
     return items, health
 
 
@@ -148,7 +228,7 @@ def _github_search_items(source: dict[str, Any], settings: dict[str, Any]) -> tu
     for query in source.get("queries", []):
         q = query.replace("{date_7d}", date_7d)
         url = f"{GITHUB_API}/search/repositories?q={quote(q)}&sort=stars&order=desc&per_page={per_page}"
-        resp, error, latency = _get(url, 20)
+        resp, error, latency = _get_for_source(url, settings, 20)
         latency_total += latency
         if error:
             errors.append(f"{q}: {error}")
@@ -171,6 +251,17 @@ def _github_search_items(source: dict[str, Any], settings: dict[str, Any]) -> tu
             seen.add(full_name)
             description = clean_text(repo.get("description") or "", 500)
             topics = repo.get("topics") or []
+            extra = {
+                "full_name": full_name,
+                "stars": repo.get("stargazers_count", 0),
+                "forks": repo.get("forks_count", 0),
+                "language": repo.get("language"),
+                "topics": topics,
+                "query": q,
+            }
+            published_at = _normalize_future(
+                iso(parse_datetime(repo.get("created_at"))), extra, settings
+            )
             items.append(Item(
                 id=stable_id(source["id"], full_name),
                 source_id=source["id"],
@@ -178,17 +269,10 @@ def _github_search_items(source: dict[str, Any], settings: dict[str, Any]) -> tu
                 tier=source["tier"],
                 title=full_name,
                 url=repo.get("html_url") or f"https://github.com/{full_name}",
-                published_at=iso(parse_datetime(repo.get("created_at"))),
+                published_at=published_at,
                 summary_raw=description,
                 tags=list(dict.fromkeys(topics[:8] + [t for t in source.get("tags", [])])),
-                extra={
-                    "full_name": full_name,
-                    "stars": repo.get("stargazers_count", 0),
-                    "forks": repo.get("forks_count", 0),
-                    "language": repo.get("language"),
-                    "topics": topics,
-                    "query": q,
-                },
+                extra=extra,
                 fetched_at=iso(),
             ))
 
@@ -200,6 +284,8 @@ def _github_search_items(source: dict[str, Any], settings: dict[str, Any]) -> tu
         health.last_item_at = max((i.published_at for i in items), default=None)
         if errors:
             health.error = truncate("; ".join(errors), 300)
+        _note_future_items(health, items)
+        _mark_stale_if_needed(health, items, settings)
     else:
         health.status = "error"
         health.error = truncate("; ".join(errors) or "no items", 300)
@@ -217,7 +303,7 @@ def _github_watchlist_items(source: dict[str, Any], settings: dict[str, Any]) ->
 
     for repo in source.get("repos", []):
         url = f"{GITHUB_API}/repos/{repo}/releases?per_page=3"
-        resp, error, latency = _get(url, 20)
+        resp, error, latency = _get_for_source(url, settings, 20)
         latency_total += latency
         if error:
             errors.append(f"{repo}: {error}")
@@ -234,6 +320,16 @@ def _github_watchlist_items(source: dict[str, Any], settings: dict[str, Any]) ->
             title = f"{repo} {release.get('tag_name') or release.get('name') or ''}".strip()
             body = clean_text(release.get("body") or "", 700)
             html_url = release.get("html_url") or f"https://github.com/{repo}/releases"
+            extra = {
+                "repo": repo,
+                "tag": release.get("tag_name"),
+                "prerelease": release.get("prerelease", False),
+            }
+            published_at = _normalize_future(
+                iso(parse_datetime(release.get("published_at") or release.get("created_at"))),
+                extra,
+                settings,
+            )
             items.append(Item(
                 id=stable_id(source["id"], repo, release.get("id") or html_url),
                 source_id=source["id"],
@@ -241,10 +337,10 @@ def _github_watchlist_items(source: dict[str, Any], settings: dict[str, Any]) ->
                 tier=source["tier"],
                 title=title,
                 url=html_url,
-                published_at=iso(parse_datetime(release.get("published_at") or release.get("created_at"))),
+                published_at=published_at,
                 summary_raw=body,
                 tags=list(dict.fromkeys(["release", repo.split("/")[-1]] + source.get("tags", []))),
-                extra={"repo": repo, "tag": release.get("tag_name"), "prerelease": release.get("prerelease", False)},
+                extra=extra,
                 fetched_at=iso(),
             ))
 
@@ -256,6 +352,8 @@ def _github_watchlist_items(source: dict[str, Any], settings: dict[str, Any]) ->
         health.last_item_at = max((i.published_at for i in items), default=None)
         if errors:
             health.error = truncate("; ".join(errors), 300)
+        _note_future_items(health, items)
+        _mark_stale_if_needed(health, items, settings)
     else:
         health.status = "error"
         health.error = truncate("; ".join(errors) or "no releases", 300)
@@ -299,7 +397,7 @@ def _github_trending_items(source: dict[str, Any], settings: dict[str, Any]) -> 
         source_id=source["id"], source_name=source["name"], tier=source["tier"],
         checked_at=iso(),
     )
-    resp, error, latency = _get(source["url"], 20)
+    resp, error, latency = _get_for_source(source["url"], settings, 20)
     health.latency_ms = latency
     health.http_status = resp.status_code if resp is not None else None
     if error:
@@ -354,7 +452,9 @@ def fetch_html_monitor(source: dict[str, Any], settings: dict[str, Any], state: 
         source_id=source["id"], source_name=source["name"], tier=source["tier"],
         checked_at=iso(),
     )
-    resp, error, latency = _get(source["url"], int(settings.get("timeout_seconds", 20)))
+    resp, error, latency = _get_for_source(
+        source["url"], settings, int(settings.get("timeout_seconds", 20))
+    )
     health.latency_ms = latency
     health.http_status = resp.status_code if resp is not None else None
     if error:

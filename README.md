@@ -37,7 +37,7 @@
 | 学习 | InfoQ 中文 | `infoq.cn/feed` | RSS |
 | 学习 | HelloGitHub | `hellogithub.com/rss` | RSS |
 
-> 源清单是可审计的：`config/sources.json` 里每个源都有 `tier`、`weight`、`type`、`enabled`。JavaGuide feed 自 2026-08-16 停更，已设置 `enabled: false`，暂不参与采集。
+> 源清单是可审计的：`config/sources.json` 里每个源都有 `tier`、`weight`、`type`、`enabled`。JavaGuide feed 自 2026-08-16 停更，已设置 `enabled: false`，暂不参与采集。MCP Releases 上游最新 release 停留在 2026-07-28，健康页会显示 `stale`（抓取成功但窗口内 0 条）；保留配置以便上游恢复发版后自动重新产出。
 
 ---
 
@@ -180,6 +180,9 @@ python -m radar run
 |---|---|
 | `window_hours` | 只保留最近 N 小时的条目，默认 720（30 天）；界面默认只看 7 天 |
 | `max_items_per_source` | 每个 feed 最多取多少条 |
+| `retry_attempts` | 每个源最多请求次数（含首次），默认 3；仅对超时/429/5xx 重试 |
+| `retry_backoff_seconds` | 重试退避基数，默认 1.0；第 n 次重试等待 n × 基数，429 会参考 `Retry-After` |
+| `future_tolerance_hours` | 超过当前时间多少小时视为异常时间戳，默认 2；会被 clamp 并降低 recency |
 | `scoring` | 来源 / 时效 / 动量 / 学习价值权重，以及时效半衰期 |
 | `diversity` | 同一来源前 N 条不衰减，之后按 `decay` 衰减，避免一个博客刷屏 |
 | `llm` | provider、模型、最大分析条数、最低分、批大小 |
@@ -260,13 +263,16 @@ tech-radar/
 - LLM 不可用时知识卡片为空，这是预期降级，不是故障。
 - 某个源临时失败（超时/403）时，上一轮该源的条目会缓存续用，卡片标「缓存」；数据不是本次新抓的，源健康页仍显示 error。
 - **JavaGuide feed 已停更**：最新条目停在 2026-08-16，已禁用；由 Inside Java 替代。
+- **MCP Releases 已停滞**：上游最新 release 为 2026-07-28（GitHub API 实测），超出 30 天窗口，健康页显示 `stale`；如果上游恢复发版会自动恢复。`sources_ok` 只统计抓取成功且窗口内有条目的源，`stale` 不计入 ok。
+- **源健康口径**：健康表的“条目”是 feed 原始条数，“有效”是时间窗口 + 去重后最终进入页面的主条目数；两者可能差异较大（如 HelloGitHub 20 → 1）。
+- **未来时间戳**：超过 `future_tolerance_hours` 的条目会被 clamp 到当前时间，卡片标记“时间异常”，recency 乘以 0.3；源本身固定的时区偏差仍应优先用 `timezone_offset_hours` 修正。
 - **InfoQ feed 时间戳偏差**：把北京时间标成 GMT，已通过 `timezone_offset_hours: -8` 修正；若后续再出现未来时间条目，先核对该配置。
 
 ---
 
-## 验证记录（2026-10-31 ~ 2026-11-01）
+## 验证记录（2026-10-31 ~ 2026-11-02）
 
-- `python -m pytest -q` → **23 passed**
+- `python -m pytest -q` → **23 passed**（v1 阶段；2026-11-02 已增至 **32 passed**）
 - 最近一次本机运行（2026-11-01）→ **154 条，19/19 源健康**（1 个 baseline）；此前多次运行 130–152 条，网络波动时 14–18/19
 - GitHub Actions 生产部署（2026-11-01）→ 首轮 **155 条、19/19 源健康、24 张知识卡片**；Pages 部署成功，`?tab=knowledge` / `#health` 深链已上线，控制台 0 error
 - 数据源质量修复后（2026-11-01）→ **165 条、19/19 源健康、26 张知识卡片**；InfoQ 未来时间条目 **0**，JavaGuide 已禁用，Inside Java 新增 10 条
@@ -275,6 +281,9 @@ tech-radar/
 - 演示数据 → **11 条，4 张知识卡片**
 - 仪表盘 tabs、搜索、时间筛选、源健康页已用浏览器实测
 - 单个源临时失败时，上一轮条目会**缓存续用**并在卡片上标注「缓存」，健康页仍显示 error
+- 生产可靠性修复（2026-11-02）→ `python -m pytest -q` **32 passed**；Actions cache 增加 `data/items.json`，carry-forward 可在生产续用；MCP Releases 标记为 `stale`（最新 release 2026-07-28）；线上效果待下一次定时任务验证
+- 数据质量修复（2026-11-02）→ `python -m pytest -q` **38 passed**；Baeldung / GitHub Changelog 同源系列文章不再误合并；健康页新增“有效”条数；实测 Baeldung 12→8、Changelog 10→10，跨源 GPT-6.1 Terra 仍合并为 1 簇
+- 健壮性修复（2026-11-02）→ `python -m pytest -q` **48 passed**；抓取重试（超时/429/5xx）、未来时间 clamp + recency 惩罚、LLM cache key 含 provider/model、前端 tab/URL 校验
 
 ---
 

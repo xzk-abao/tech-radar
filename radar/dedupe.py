@@ -4,7 +4,7 @@ from __future__ import annotations
 from urllib.parse import urlsplit
 
 from .models import Item
-from .util import extract_versions, jaccard, stable_id, title_tokens, url_key
+from .util import extract_serials, extract_versions, jaccard, stable_id, title_tokens, url_key
 
 TIER_PRIORITY = {"official": 3, "github": 2, "learning": 1}
 
@@ -18,6 +18,11 @@ def _same_event(a: Item, b: Item) -> bool:
     if a_versions and b_versions and a_versions != b_versions:
         return False
 
+    a_serials = extract_serials(a.title)
+    b_serials = extract_serials(b.title)
+    if a_serials and b_serials and a_serials != b_serials:
+        return False
+
     a_tokens = title_tokens(a.title)
     b_tokens = title_tokens(b.title)
     similarity = jaccard(a_tokens, b_tokens)
@@ -26,7 +31,9 @@ def _same_event(a: Item, b: Item) -> bool:
 
     a_host = urlsplit(a.url).netloc.lower()
     b_host = urlsplit(b.url).netloc.lower()
-    if a_host and a_host == b_host and similarity >= 0.45:
+    # Same-host relaxed matching is for cross-source duplicates. Applying it
+    # inside one feed merges unrelated serial posts (weekly issues, changelog).
+    if a.source_id != b.source_id and a_host and a_host == b_host and similarity >= 0.45:
         return True
 
     # Same GitHub repository (trending + search + releases).

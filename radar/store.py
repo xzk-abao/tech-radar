@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -50,7 +51,9 @@ def _dataset_stats(items: list[Item], healths: list[SourceHealth], llm_stats: di
         "clusters": len({item.cluster_id for item in items if item.cluster_id}),
         "sources_total": len(healths),
         "sources_ok": ok,
+        "sources_with_items": sum(1 for h in healths if h.effective_items > 0),
         "sources_error": sum(1 for h in healths if h.status == "error"),
+        "sources_stale": sum(1 for h in healths if h.status == "stale"),
         "sources_baseline": sum(1 for h in healths if h.status == "baseline"),
         "llm": llm_stats,
     }
@@ -65,6 +68,9 @@ def write_dataset(
     demo: bool = False,
 ) -> dict[str, Any]:
     items = sorted(items, key=lambda i: (i.score, i.published_at), reverse=True)
+    effective = Counter(item.source_id for item in items)
+    for health in healths:
+        health.effective_items = effective.get(health.source_id, 0)
     generated_at = iso()
     dataset = {
         "version": OUTPUT_VERSION,

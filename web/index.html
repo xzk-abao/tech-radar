@@ -84,11 +84,11 @@
     <section id="healthView" class="hidden">
       <div class="panel">
         <div class="panel-head"><h2>源健康</h2><span class="panel-kicker">source health</span></div>
-        <p class="health-note">状态为 <code>baseline</code> 表示第一次抓取，已记录页面指纹；之后检测到变化才会产出条目。</p>
+        <p class="health-note">状态为 <code>baseline</code> 表示第一次抓取，已记录页面指纹；之后检测到变化才会产出条目。状态为 <code>stale</code> 表示源可抓取，但最近条目已超出保留窗口，通常意味着源停更。</p>
         <div class="table-wrap">
           <table id="healthTable">
             <thead>
-              <tr><th>来源</th><th>层级</th><th>状态</th><th>条目</th><th>最近条目</th><th>错误</th></tr>
+              <tr><th>来源</th><th>层级</th><th>状态</th><th>条目 / 有效</th><th>最近条目</th><th>错误 / 说明</th></tr>
             </thead>
             <tbody></tbody>
           </table>
