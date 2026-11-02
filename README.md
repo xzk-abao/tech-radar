@@ -261,6 +261,7 @@ tech-radar/
 - 某个源临时失败（超时/403）时，上一轮该源的条目会缓存续用，卡片标「缓存」；数据不是本次新抓的，源健康页仍显示 error。
 - **JavaGuide feed 已停更**：最新条目停在 2026-08-16，已禁用；由 Inside Java 替代。
 - **MCP Releases 已停滞**：上游最新 release 为 2026-07-28（GitHub API 实测），超出 30 天窗口，健康页显示 `stale`；如果上游恢复发版会自动恢复。`sources_ok` 只统计抓取成功且窗口内有条目的源，`stale` 不计入 ok。
+- **源健康口径**：健康表的“条目”是 feed 原始条数，“有效”是时间窗口 + 去重后最终进入页面的主条目数；两者可能差异较大（如 HelloGitHub 20 → 1）。
 - **InfoQ feed 时间戳偏差**：把北京时间标成 GMT，已通过 `timezone_offset_hours: -8` 修正；若后续再出现未来时间条目，先核对该配置。
 
 ---
@@ -277,6 +278,7 @@ tech-radar/
 - 仪表盘 tabs、搜索、时间筛选、源健康页已用浏览器实测
 - 单个源临时失败时，上一轮条目会**缓存续用**并在卡片上标注「缓存」，健康页仍显示 error
 - 生产可靠性修复（2026-11-02）→ `python -m pytest -q` **32 passed**；Actions cache 增加 `data/items.json`，carry-forward 可在生产续用；MCP Releases 标记为 `stale`（最新 release 2026-07-28）；线上效果待下一次定时任务验证
+- 数据质量修复（2026-11-02）→ `python -m pytest -q` **38 passed**；Baeldung / GitHub Changelog 同源系列文章不再误合并；健康页新增“有效”条数；实测 Baeldung 12→8、Changelog 10→10，跨源 GPT-6.1 Terra 仍合并为 1 簇
 
 ---
 
