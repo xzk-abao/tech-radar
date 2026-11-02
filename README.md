@@ -293,3 +293,9 @@ tech-radar/
 - ✅ 知识卡片导出到 `D:\mdStudy\personal-knowledge-base\AI\04-资料库\AI工具雷达\`（`python -m radar export`）
 - Phase 2：把采集/分析改写成 Java 21 + Spring Boot + Spring AI（复用同一套静态前端）
 - Phase 3：历史趋势页、按主题的雷达图、企业微信/飞书推送
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 xiongzhikang

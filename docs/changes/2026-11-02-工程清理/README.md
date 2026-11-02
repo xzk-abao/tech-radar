@@ -32,6 +32,7 @@ PR #1 上线后遗留四类工程问题：
 | 时区 | `radar/export.py:120` | 导出日期复用 `local_date`，删除重复的 ZoneInfo 逻辑 |
 | import | `radar/fetch.py`、`radar/cli.py`、`radar/store.py` | 移除未使用的 `json` / `utcnow` / `datetime` |
 | 依赖 | `requirements.txt`、`requirements-dev.txt` | 锁定 `feedparser==6.0.14`、`requests==2.33.0`、`beautifulsoup4==4.15.0`、`pytest==9.1.1` |
+| 许可证 | `LICENSE`、`README.md` | 新增 MIT License，README 增加 License 章节 |
 | 测试 | `tests/test_workflow.py` | 锁定 PR 触发、PR 跳过部署、per-ref 并发 |
 | 测试 | `tests/test_store.py` | 锁定 raw_items/deduped 口径与时区化 history 日期 |
 | 测试 | `tests/test_util.py` | 锁定 `local_date` 转换与未知时区回退 |
