@@ -112,8 +112,11 @@
   function renderStats() {
     const stats = (state.dataset && state.dataset.stats) || {};
     const tiers = stats.by_tier || {};
+    const coverage = Number.isFinite(stats.sources_with_items)
+      ? `${stats.sources_with_items}/${stats.sources_total || 0} 源有产出 · `
+      : "";
     const cards = [
-      ["本期条目", stats.total_items || 0, `${stats.clusters || 0} 个事件簇`],
+      ["本期条目", stats.total_items || 0, `${coverage}${stats.clusters || 0} 个事件簇`],
       ["官方动态", tiers.official || 0, "发布 · 文档 · 版本"],
       ["GitHub 趋势", tiers.github || 0, "新仓 · 升温 · 发版"],
       ["学习精选", tiers.learning || 0, "教程 · 实战 · 架构"],
@@ -137,10 +140,14 @@
     const ok = stats.sources_ok || 0;
     const total = stats.sources_total || 0;
     const stale = stats.sources_stale || 0;
+    const withItems = stats.sources_with_items;
     const ratio = total ? ok / total : 0;
     const pill = $("#healthPill");
+    const hints = [];
+    if (Number.isFinite(withItems)) hints.push(`${withItems} 个源有最终条目`);
+    if (stale) hints.push(`${stale} 个源最近条目已超出保留窗口`);
     pill.textContent = `${ok}/${total}`;
-    pill.title = stale ? `${stale} 个源最近条目已超出保留窗口` : "";
+    pill.title = hints.join("；");
     pill.className = `pill${ratio < 0.5 ? " bad" : ratio < 0.8 || stale > 0 ? " warn" : ""}`;
     $("#demoBanner").classList.toggle("hidden", !state.dataset.demo);
     $("#footerStats").textContent = `${total} 个源 · LLM ${stats.llm && stats.llm.model ? stats.llm.model : "fallback"}`;
@@ -166,9 +173,11 @@
 
   function membersBlock(item) {
     if (!item.members || item.members.length < 2) return "";
+    const sourceCount = new Set(item.members.map((member) => member.source_name)).size;
+    const label = sourceCount > 1 ? `多源 ${item.members.length}` : `同事件 ${item.members.length}`;
     return `
       <details class="members">
-        <summary>多源 ${item.members.length}</summary>
+        <summary>${esc(label)}</summary>
         <ul class="member-list">
           ${item.members.map((member) => `
             <li>${esc(member.source_name)} · <a href="${esc(member.url)}" target="_blank" rel="noopener noreferrer">${esc(member.title)}</a></li>
@@ -305,16 +314,22 @@
       tbody.innerHTML = `<tr><td colspan="6">暂无源健康数据</td></tr>`;
       return;
     }
-    tbody.innerHTML = rows.map((row) => `
-      <tr>
-        <td>${esc(row.source_name)}<br><span class="mini-meta">${esc(row.source_id)}</span></td>
-        <td>${esc(TIER_LABEL[row.tier] || row.tier)}</td>
-        <td><span class="status ${esc(row.status)}">${esc(row.status)}</span></td>
-        <td>${esc(row.items || 0)}</td>
-        <td>${row.last_item_at ? esc(fmtDateTime(row.last_item_at)) : "--"}</td>
-        <td class="err-text ${esc(row.status)}">${esc(row.error || "")}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML = rows.map((row) => {
+      const effective = row.effective_items == null ? row.items : row.effective_items;
+      const count = effective === row.items
+        ? esc(row.items || 0)
+        : `${esc(row.items || 0)}<br><span class="mini-meta">有效 ${esc(effective)}</span>`;
+      return `
+        <tr>
+          <td>${esc(row.source_name)}<br><span class="mini-meta">${esc(row.source_id)}</span></td>
+          <td>${esc(TIER_LABEL[row.tier] || row.tier)}</td>
+          <td><span class="status ${esc(row.status)}">${esc(row.status)}</span></td>
+          <td>${count}</td>
+          <td>${row.last_item_at ? esc(fmtDateTime(row.last_item_at)) : "--"}</td>
+          <td class="err-text ${esc(row.status)}">${esc(row.error || "")}</td>
+        </tr>
+      `;
+    }).join("");
   }
 
   function render() {

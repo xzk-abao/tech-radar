@@ -48,6 +48,7 @@ class SourceHealth:
     status: str = "unknown"  # ok | stale | error | skipped | baseline
     http_status: int | None = None
     items: int = 0
+    effective_items: int = 0
     error: str = ""
     latency_ms: int = 0
     last_item_at: str | None = None

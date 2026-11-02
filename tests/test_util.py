@@ -2,6 +2,7 @@ from datetime import timezone
 
 from radar.util import (
     clean_text,
+    extract_serials,
     extract_versions,
     jaccard,
     normalize_url,
@@ -38,3 +39,12 @@ def test_versions_and_tokens():
     assert "claude" in tokens and "code" in tokens
     assert "releases" not in tokens
     assert jaccard({"a", "b"}, {"a", "b"}) == 1.0
+
+
+def test_extract_serials():
+    assert extract_serials("Java Weekly, Issue 669") == {"669"}
+    assert extract_serials("第 669 期 Java Weekly") == {"669"}
+    assert extract_serials("No. 42 release") == {"42"}
+    assert extract_serials("#123 fix") == {"123"}
+    assert extract_serials("C# 12 support") == set()
+    assert extract_serials("No serial here") == set()

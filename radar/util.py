@@ -20,6 +20,8 @@ _TRACKING_PARAMS = {
 }
 _TOKEN_RE = re.compile(r"[a-z0-9一-鿿]+")
 _VERSION_RE = re.compile(r"\bv?\d+(?:\.\d+){1,3}\b", re.IGNORECASE)
+_SERIAL_RE = re.compile(r"(?:\b(?:issue|no\.?)\s*|(?<!\w)#)\s*(\d+)", re.IGNORECASE)
+_CN_SERIAL_RE = re.compile(r"第\s*(\d+)\s*期")
 _STOPWORDS = {
     "the", "a", "an", "and", "or", "of", "for", "to", "in", "on", "with",
     "is", "are", "was", "were", "be", "by", "at", "from", "as", "it", "its",
@@ -122,6 +124,11 @@ def jaccard(a: set[str], b: set[str]) -> float:
 
 def extract_versions(title: str) -> set[str]:
     return {v.lower().lstrip("v") for v in _VERSION_RE.findall(title)}
+
+
+def extract_serials(title: str) -> set[str]:
+    """Return issue/serial numbers such as Issue 669, No. 42, #123, 第 669 期."""
+    return set(_SERIAL_RE.findall(title)) | set(_CN_SERIAL_RE.findall(title))
 
 
 def truncate(value: str, limit: int) -> str:

@@ -61,3 +61,35 @@ def test_unrelated_items_not_clustered():
     ]
     clusters = cluster_items(items)
     assert len(clusters) == 2
+
+
+def test_same_source_serial_issues_do_not_cluster():
+    items = [
+        make_item("Java Weekly, Issue 669", "https://www.baeldung.com/java-weekly-669", source_id="baeldung"),
+        make_item("Java Weekly, Issue 668", "https://www.baeldung.com/java-weekly-668", source_id="baeldung"),
+    ]
+    clusters = cluster_items(items)
+
+    assert len(clusters) == 2
+
+
+def test_same_source_similar_changelog_posts_do_not_cluster():
+    items = [
+        make_item("GitHub Copilot app, Universe releases", "https://github.blog/1", source_id="github_changelog"),
+        make_item("Security extension for the GitHub Copilot app", "https://github.blog/2", source_id="github_changelog"),
+        make_item("GitHub Copilot in VS Code, Universe releases", "https://github.blog/3", source_id="github_changelog"),
+    ]
+    clusters = cluster_items(items)
+
+    assert len(clusters) == 3
+
+
+def test_cross_source_same_title_still_clusters():
+    items = [
+        make_item("Introducing GPT-6.1 Terra", "https://openai.com/index/gpt-6-1-terra", source_id="openai_news"),
+        make_item("GPT-6.1 Terra", "https://simonwillison.net/2026/nov/1/gpt-6-1-terra", source_id="simon_willison"),
+    ]
+    clusters = cluster_items(items)
+
+    assert len(clusters) == 1
+    assert len(clusters[0]) == 2
