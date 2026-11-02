@@ -2,9 +2,20 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from radar.fetch import _entry_datetime, _mark_stale_if_needed, _repo_relevant, fetch_feed
+import requests
+
+from email.utils import format_datetime
+
+from radar.fetch import (
+    _entry_datetime,
+    _get,
+    _mark_stale_if_needed,
+    _normalize_future,
+    _repo_relevant,
+    fetch_feed,
+)
 from radar.models import Item, SourceHealth
-from radar.util import iso, utcnow
+from radar.util import iso, parse_datetime, utcnow
 
 
 def test_entry_datetime_applies_source_offset():
@@ -102,6 +113,109 @@ def test_stale_check_does_not_override_error_or_baseline():
         assert health.status == status
 
 
+class FakeResponse:
+    def __init__(self, status_code, headers=None):
+        self.status_code = status_code
+        self.headers = headers or {}
+
+
+def test_get_retries_transient_http_errors(monkeypatch):
+    calls = []
+    responses = [FakeResponse(503), FakeResponse(200)]
+
+    def fake_get(*args, **kwargs):
+        calls.append(1)
+        return responses.pop(0)
+
+    monkeypatch.setattr("radar.fetch.requests.get", fake_get)
+    monkeypatch.setattr("radar.fetch.time.sleep", lambda seconds: None)
+
+    response, error, _ = _get("https://example.com", attempts=2, backoff=0.01)
+
+    assert error == ""
+    assert response.status_code == 200
+    assert len(calls) == 2
+
+
+def test_get_does_not_retry_404(monkeypatch):
+    calls = []
+
+    def fake_get(*args, **kwargs):
+        calls.append(1)
+        return FakeResponse(404)
+
+    monkeypatch.setattr("radar.fetch.requests.get", fake_get)
+    monkeypatch.setattr("radar.fetch.time.sleep", lambda seconds: None)
+
+    response, error, _ = _get("https://example.com", attempts=3, backoff=0.01)
+
+    assert response.status_code == 404
+    assert error == "HTTP 404"
+    assert len(calls) == 1
+
+
+def test_get_retries_network_errors(monkeypatch):
+    calls = []
+
+    def fake_get(*args, **kwargs):
+        calls.append(1)
+        if len(calls) == 1:
+            raise requests.Timeout("timed out")
+        return FakeResponse(200)
+
+    monkeypatch.setattr("radar.fetch.requests.get", fake_get)
+    monkeypatch.setattr("radar.fetch.time.sleep", lambda seconds: None)
+
+    response, error, _ = _get("https://example.com", attempts=2, backoff=0.01)
+
+    assert error == ""
+    assert response.status_code == 200
+    assert len(calls) == 2
+
+
+def test_future_timestamp_is_clamped():
+    extra = {}
+    future = iso(utcnow() + timedelta(days=1))
+
+    result = _normalize_future(future, extra, {"future_tolerance_hours": 2})
+
+    assert extra["future_timestamp"] is True
+    assert extra["original_published_at"] == future
+    assert parse_datetime(result) <= utcnow() + timedelta(hours=2)
+
+
+def test_recent_timestamp_is_not_clamped():
+    extra = {}
+    recent = iso(utcnow() - timedelta(hours=1))
+
+    result = _normalize_future(recent, extra, {"future_tolerance_hours": 2})
+
+    assert result == recent
+    assert "future_timestamp" not in extra
+
+
+def test_fetch_feed_clamps_future_items_and_notes_health(monkeypatch):
+    future = format_datetime(utcnow() + timedelta(days=1))
+    xml = f"""<?xml version="1.0"?>
+    <rss version="2.0"><channel><title>Future feed</title>
+      <item><title>Future release</title><link>https://example.com/future</link>
+      <pubDate>{future}</pubDate></item>
+    </channel></rss>"""
+
+    class Response:
+        status_code = 200
+        content = xml.encode("utf-8")
+
+    monkeypatch.setattr("radar.fetch._get_for_source", lambda url, settings, timeout=15: (Response(), "", 1))
+    items, health = fetch_feed(
+        {"id": "s1", "name": "Source", "tier": "official", "url": "https://example.com/feed"},
+        {"window_hours": 720, "max_items_per_source": 20},
+    )
+
+    assert items[0].extra["future_timestamp"] is True
+    assert "future-dated" in health.error
+
+
 def test_fetch_feed_marks_old_feed_stale(monkeypatch):
     xml = """<?xml version="1.0"?>
     <rss version="2.0"><channel><title>Old feed</title>
@@ -113,7 +227,7 @@ def test_fetch_feed_marks_old_feed_stale(monkeypatch):
         status_code = 200
         content = xml.encode("utf-8")
 
-    monkeypatch.setattr("radar.fetch._get", lambda url, timeout=15: (Response(), "", 1))
+    monkeypatch.setattr("radar.fetch._get_for_source", lambda url, settings, timeout=15: (Response(), "", 1))
     items, health = fetch_feed(
         {"id": "s1", "name": "Source", "tier": "official", "url": "https://example.com/feed"},
         {"window_hours": 720, "max_items_per_source": 20},

@@ -27,8 +27,10 @@ DEFAULT_SYSTEM_PROMPT = """你是技术雷达编辑，服务对象是中文 Java
 不要编造输入中没有的事实；不确定就写得保守。"""
 
 
-def _cache_key(item: Item) -> str:
-    payload = f"{PROMPT_VERSION}\x1f{item.title}\x1f{item.url}".encode("utf-8", "ignore")
+def _cache_key(item: Item, provider: str, model: str) -> str:
+    payload = (
+        f"{PROMPT_VERSION}\x1f{provider}\x1f{model}\x1f{item.title}\x1f{item.url}"
+    ).encode("utf-8", "ignore")
     return hashlib.sha1(payload).hexdigest()
 
 
@@ -133,6 +135,7 @@ def summarize_items(items: list[Item], llm_settings: dict[str, Any], cache_path:
     stats = {"provider": None, "model": None, "calls": 0, "hits": 0, "fallbacks": 0, "errors": []}
     cache = load_json(cache_path, {})
     client = LLMClient(llm_settings)
+    cache_namespace = (client.provider, client.model or "")
     stats["provider"] = client.provider
     stats["model"] = client.model if client.available else None
     if not client.settings.get("enabled", True):
@@ -158,14 +161,17 @@ def summarize_items(items: list[Item], llm_settings: dict[str, Any], cache_path:
             item.knowledge = result["knowledge"]
             stats["fallbacks"] += 1
             continue
-        cached = cache.get(_cache_key(item))
+        cached = cache.get(_cache_key(item, *cache_namespace))
         if cached:
             item.summary = cached.get("summary") or _fallback(item)["summary"]
             item.why = cached.get("why") or _fallback(item)["why"]
             item.knowledge = cached.get("knowledge")
             stats["hits"] += 1
 
-    pending = [item for item in candidates if not cache.get(_cache_key(item))]
+    pending = [
+        item for item in candidates
+        if not cache.get(_cache_key(item, *cache_namespace))
+    ]
     if pending and not client.available:
         if client.settings.get("enabled", True):
             stats["errors"].append("LLM unavailable: missing API key/provider config")
@@ -183,7 +189,12 @@ def summarize_items(items: list[Item], llm_settings: dict[str, Any], cache_path:
         try:
             content = client.complete(DEFAULT_SYSTEM_PROMPT, _batch_prompt(batch))
             stats["calls"] += 1
-            parsed = {row.get("id"): row for row in _parse_json_array(content) if isinstance(row, dict)}
+            rows = [row for row in _parse_json_array(content) if isinstance(row, dict)]
+            if not rows:
+                stats["errors"].append(f"LLM returned no valid JSON for batch of {len(batch)}")
+            elif len(rows) < len(batch):
+                stats["errors"].append(f"LLM returned {len(rows)}/{len(batch)} valid rows")
+            parsed = {row.get("id"): row for row in rows}
         except Exception as exc:
             stats["errors"].append(f"{type(exc).__name__}: {exc}")
             parsed = {}
@@ -202,7 +213,7 @@ def summarize_items(items: list[Item], llm_settings: dict[str, Any], cache_path:
             item.summary = result["summary"]
             item.why = result["why"]
             item.knowledge = result["knowledge"]
-            cache[_cache_key(item)] = result
+            cache[_cache_key(item, *cache_namespace)] = result
 
     save_json(cache_path, cache)
     return stats

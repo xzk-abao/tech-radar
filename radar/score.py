@@ -60,6 +60,9 @@ def score_item(item: Item, settings: dict[str, Any], now: datetime) -> float:
         now,
         float(scoring.get("recency_half_life_hours", 36)),
     )
+    if (item.extra or {}).get("future_timestamp"):
+        # A clamped future timestamp must not rank like a fresh item.
+        recency *= 0.3
     momentum = momentum_score(item)
     learning = learning_score(item)
     score = (

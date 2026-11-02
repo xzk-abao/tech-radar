@@ -3,6 +3,9 @@
     "timezone": "Asia/Shanghai",
     "window_hours": 720,
     "max_items_per_source": 20,
+    "retry_attempts": 3,
+    "retry_backoff_seconds": 1.0,
+    "future_tolerance_hours": 2,
     "github_trending_limit": 15,
     "github_search_per_page": 10,
     "llm": {
