@@ -8,3 +8,4 @@
 | 2026-11-02 | [2026-11-02-生产可靠性修复](2026-11-02-生产可靠性修复/)   | Actions 缓存 data/items.json 恢复生产 carry-forward；新增 stale 源状态，MCP Releases 不再计入 sources_ok |
 | 2026-11-02 | [2026-11-02-数据质量修复](2026-11-02-数据质量修复/)     | 同源 Issue/Changelog 不再误合并；跨源同事件保留；健康页新增有效条目与有产出源覆盖 |
 | 2026-11-02 | [2026-11-02-健壮性修复](2026-11-02-健壮性修复/)       | 抓取重试（超时/429/5xx）；未来时间 clamp + recency 惩罚；LLM cache 含 provider/model；前端 tab/URL 校验 |
+| 2026-11-02 | [2026-11-02-工程清理](2026-11-02-工程清理/)         | workflow PR 触发但不部署；raw_items/deduped 口径；history 按本地时区记日期；依赖锁定 |

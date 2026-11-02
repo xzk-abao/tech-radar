@@ -284,6 +284,7 @@ tech-radar/
 - 生产可靠性修复（2026-11-02）→ `python -m pytest -q` **32 passed**；Actions cache 增加 `data/items.json`，carry-forward 可在生产续用；MCP Releases 标记为 `stale`（最新 release 2026-07-28）；线上效果待下一次定时任务验证
 - 数据质量修复（2026-11-02）→ `python -m pytest -q` **38 passed**；Baeldung / GitHub Changelog 同源系列文章不再误合并；健康页新增“有效”条数；实测 Baeldung 12→8、Changelog 10→10，跨源 GPT-6.1 Terra 仍合并为 1 簇
 - 健壮性修复（2026-11-02）→ `python -m pytest -q` **48 passed**；抓取重试（超时/429/5xx）、未来时间 clamp + recency 惩罚、LLM cache key 含 provider/model、前端 tab/URL 校验
+- 工程清理（2026-11-02）→ `python -m pytest -q` **56 passed**；workflow 增加 PR 触发（PR 只跑测试不部署）；stats 新增 `raw_items`/`deduped`；history 快照按 `Asia/Shanghai` 记日期；依赖锁定
 
 ---
 
