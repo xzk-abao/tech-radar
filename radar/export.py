@@ -4,9 +4,8 @@ from __future__ import annotations
 import os
 import re
 from typing import Any
-from zoneinfo import ZoneInfo
 
-from .util import parse_datetime, utcnow
+from .util import local_date, parse_datetime, utcnow
 
 MARKER_START = "<!-- tech-radar:start -->"
 MARKER_END = "<!-- tech-radar:end -->"
@@ -118,12 +117,7 @@ def export_markdown(
     generated_at = generated_at or dataset.get("generated_at") or utcnow().isoformat()
     if not date_str:
         tz_name = dataset.get("settings", {}).get("timezone", "Asia/Shanghai")
-        try:
-            tz = ZoneInfo(tz_name)
-        except (KeyError, ValueError):
-            tz = None
-        generated = parse_datetime(generated_at)
-        date_str = (generated.astimezone(tz) if tz else generated).strftime("%Y-%m-%d")
+        date_str = local_date(tz_name, parse_datetime(generated_at))
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, f"{date_str}-技术雷达.md")
     block = f"{MARKER_START}\n{build_markdown(dataset, date_str)}\n{MARKER_END}"

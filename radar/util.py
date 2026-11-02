@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from zoneinfo import ZoneInfo
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
@@ -41,6 +42,18 @@ def iso(dt: datetime | None = None) -> str:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc).isoformat(timespec="seconds")
+
+
+def local_date(tz_name: str = "UTC", now: datetime | None = None) -> str:
+    """Date string in the configured timezone; falls back to UTC on unknown tz."""
+    moment = now or utcnow()
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    try:
+        tz = ZoneInfo(tz_name)
+    except (KeyError, ValueError):
+        tz = timezone.utc
+    return moment.astimezone(tz).strftime("%Y-%m-%d")
 
 
 def parse_datetime(value: Any, default: datetime | None = None) -> datetime:

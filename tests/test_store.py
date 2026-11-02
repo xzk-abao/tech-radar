@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 
 from radar.models import Item, SourceHealth
 from radar.store import _dataset_stats, build_public, write_dataset
@@ -53,6 +54,76 @@ def test_stale_sources_are_not_counted_as_ok():
     assert stats["sources_ok"] == 1
     assert stats["sources_stale"] == 1
     assert stats["sources_with_items"] == 0
+
+
+def test_dataset_stats_report_raw_and_deduped(tmp_path):
+    data_dir = tmp_path / "data"
+    items = [
+        Item(
+            id=f"i{n}",
+            source_id="s1",
+            source_name="Source",
+            tier="official",
+            title=f"Title {n}",
+            url=f"https://example.com/{n}",
+            published_at="2026-10-31T08:00:00+00:00",
+            score=80.0,
+            cluster_id=f"c{n}",
+        )
+        for n in range(3)
+    ]
+    config = {"settings": {"timezone": "Asia/Shanghai", "window_hours": 720}}
+
+    dataset = write_dataset(str(data_dir), items, [], {}, config, raw_items=5)
+
+    assert dataset["stats"]["raw_items"] == 5
+    assert dataset["stats"]["total_items"] == 3
+    assert dataset["stats"]["deduped"] == 2
+
+
+def test_dataset_stats_default_raw_items(tmp_path):
+    data_dir = tmp_path / "data"
+    item = Item(
+        id="i1",
+        source_id="s1",
+        source_name="Source",
+        tier="official",
+        title="Title",
+        url="https://example.com",
+        published_at="2026-10-31T08:00:00+00:00",
+        score=80.0,
+        cluster_id="c1",
+    )
+    config = {"settings": {"timezone": "Asia/Shanghai", "window_hours": 720}}
+
+    dataset = write_dataset(str(data_dir), [item], [], {}, config)
+
+    assert dataset["stats"]["raw_items"] == dataset["stats"]["total_items"]
+    assert dataset["stats"]["deduped"] == 0
+
+
+def test_history_snapshot_uses_configured_timezone(tmp_path, monkeypatch):
+    data_dir = tmp_path / "data"
+    item = Item(
+        id="i1",
+        source_id="s1",
+        source_name="Source",
+        tier="official",
+        title="Title",
+        url="https://example.com",
+        published_at="2026-10-31T08:00:00+00:00",
+        score=80.0,
+        cluster_id="c1",
+    )
+    config = {"settings": {"timezone": "Asia/Shanghai", "window_hours": 720}}
+    fixed = datetime(2026, 11, 1, 20, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr("radar.util.utcnow", lambda: fixed)
+
+    write_dataset(str(data_dir), [item], [], {}, config)
+
+    assert (data_dir / "history" / "2026-11-02.json").exists()
+    index = json.loads((data_dir / "history" / "index.json").read_text(encoding="utf-8"))
+    assert index[-1]["date"] == "2026-11-02"
 
 
 def test_effective_items_use_final_primaries(tmp_path):

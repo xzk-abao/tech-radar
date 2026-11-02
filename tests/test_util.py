@@ -1,10 +1,11 @@
-from datetime import timezone
+from datetime import datetime, timezone
 
 from radar.util import (
     clean_text,
     extract_serials,
     extract_versions,
     jaccard,
+    local_date,
     normalize_url,
     parse_datetime,
     stable_id,
@@ -48,3 +49,14 @@ def test_extract_serials():
     assert extract_serials("#123 fix") == {"123"}
     assert extract_serials("C# 12 support") == set()
     assert extract_serials("No serial here") == set()
+
+
+def test_local_date_converts_timezone():
+    moment = datetime(2026, 11, 1, 20, 0, tzinfo=timezone.utc)
+    assert local_date("UTC", moment) == "2026-11-01"
+    assert local_date("Asia/Shanghai", moment) == "2026-11-02"
+
+
+def test_local_date_falls_back_for_unknown_tz():
+    moment = datetime(2026, 11, 1, 20, 0, tzinfo=timezone.utc)
+    assert local_date("Not/AZone", moment) == "2026-11-01"
